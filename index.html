@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="description" content="Mein Bücherregal - Privates Buchverwaltungssystem">
+    
+    <title>Mein Bücherregal</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%23C97C5C' width='192' height='192' rx='45'/><text x='50%' y='50%' font-size='120' font-weight='bold' fill='white' text-anchor='middle' dy='.35em'>📚</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%23C97C5C' width='180' height='180' rx='40'/><text x='50%' y='50%' font-size='100' font-weight='bold' fill='white' text-anchor='middle' dy='.35em'>📚</text></svg>">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #ffffff;
+            color: #1a1a1a;
+            overflow: hidden;
+        }
+        
+        html, body, #app {
+            width: 100%;
+            height: 100vh;
+            max-width: 100vw;
+        }
+        
+        /* Login Screen */
+        .login-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f7f5 0%, #fafaf8 100%);
+        }
+        
+        .login-box {
+            width: 100%;
+            max-width: 320px;
+        }
+        
+        .login-box h1 {
+            font-size: 28px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 8px;
+            color: #1a1a1a;
+        }
+        
+        .login-box p {
+            font-size: 14px;
+            text-align: center;
+            color: #666;
+            margin-bottom: 32px;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #666;
+            margin-bottom: 6px;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            background: #fff;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #C97C5C;
+            box-shadow: 0 0 0 3px rgba(201, 124, 92, 0.1);
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: #C97C5C;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: all 0.2s;
+        }
+        
+        .login-btn:active {
+            transform: scale(0.98);
+        }
+        
+        .login-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .forgot-password-btn {
+            background: none;
+            border: none;
+            color: #C97C5C;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 12px 0;
+            text-align: center;
+            width: 100%;
+            margin-top: 8px;
+            text-decoration: underline;
+        }
+        
+        .error-message {
+            color: #d32f2f;
+            font-size: 13px;
+            margin-top: 8px;
+            text-align: center;
+        }
+        
+        .success-message {
+            color: #388e3c;
+            font-size: 13px;
+            margin-top: 8px;
+            text-align: center;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: flex-end;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px 16px 0 0;
+            padding: 24px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .modal-header h2 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        /* Main App */
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        
+        .app-header {
+            padding: 8px 16px 14px;
+            background: white;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+        
+        .header-top h1 {
+            font-size: 30px;
+            font-weight: 700;
+        }
+        
+        .rating-toggle {
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            color: #ccc;
+            transition: color 0.2s;
+        }
+        
+        .rating-toggle.active {
+            color: #FFD700;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 0;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 0 16px;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 12px 0;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 15px;
+            color: #999;
+            position: relative;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        
+        .tab.active {
+            color: #C97C5C;
+        }
+        
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #C97C5C;
+        }
+        
+        .tab-content {
+            display: none;
+            flex: 1;
+            overflow-y: auto;
+            padding: 0;
+        }
+        
+        .tab-content.active {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .book-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            padding: 14px;
+            padding-bottom: 100px;
+        }
+        
+        .book-card {
+            cursor: pointer;
+            animation: fadeIn 0.2s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .book-cover {
+            width: 100%;
+            aspect-ratio: 2/3;
+            background: #f5f5f5;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+            transition: transform 0.2s;
+            overflow: hidden;
+        }
+        
+        .book-card:active .book-cover {
+            transform: scale(0.98);
+        }
+        
+        .book-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .book-rating {
+            margin-top: 4px;
+            display: flex;
+            gap: 2px;
+            font-size: 11px;
+        }
+        
+        .star {
+            color: #FFD700;
+        }
+        
+        .star-empty {
+            color: #d1d1d1;
+        }
+        
+        .empty-state {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+        
+        .empty-state-text {
+            font-size: 17px;
+            font-weight: 500;
+            color: #999;
+            margin-bottom: 8px;
+        }
+        
+        .empty-state-desc {
+            font-size: 14px;
+            color: #bbb;
+        }
+        
+        /* Year sections */
+        .year-section {
+            padding: 0;
+        }
+        
+        .year-header {
+            background: white;
+            padding: 12px 16px 8px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .year-header h3 {
+            font-size: 26px;
+            font-weight: 700;
+        }
+        
+        .year-toggle {
+            color: #999;
+            font-size: 14px;
+        }
+        
+        .month-header {
+            padding: 12px 16px 4px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #999;
+        }
+        
+        .month-books {
+            padding: 0 14px 14px 14px;
+        }
+        
+        .ungelesen-section {
+            padding: 12px 16px 0;
+        }
+        
+        .section-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .section-books {
+            padding: 0 0 14px 0;
+        }
+        
+        /* Floating Action Button */
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #C97C5C;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(201, 124, 92, 0.3);
+            z-index: 100;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .fab:active {
+            transform: scale(0.95);
+        }
+        
+        /* Detail Modal */
+        .detail-modal .modal-content {
+            border-radius: 16px 16px 0 0;
+            max-height: 95vh;
+        }
+        
+        .detail-cover {
+            width: 100%;
+            max-height: 250px;
+            border-radius: 12px;
+            object-fit: cover;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+        
+        .detail-title {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .detail-author {
+            font-size: 16px;
+            color: #999;
+            margin-bottom: 20px;
+        }
+        
+        .detail-section {
+            margin-bottom: 20px;
+        }
+        
+        .detail-section-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: #999;
+            margin-bottom: 8px;
+        }
+        
+        .rating-container {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 16px;
+        }
+        
+        .rating-star {
+            font-size: 32px;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        
+        .rating-star:active {
+            transform: scale(1.15);
+        }
+        
+        .notes-textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 16px;
+            resize: none;
+        }
+        
+        .notes-textarea:focus {
+            outline: none;
+            border-color: #C97C5C;
+            box-shadow: 0 0 0 3px rgba(201, 124, 92, 0.1);
+        }
+        
+        .dropdown {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+        
+        .dropdown-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        
+        .dropdown-group > div {
+            flex: 1;
+        }
+        
+        .delete-btn {
+            width: 100%;
+            padding: 12px;
+            background: rgba(211, 47, 47, 0.08);
+            color: #d32f2f;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        
+        .delete-btn:active {
+            opacity: 0.8;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .btn-secondary {
+            flex: 1;
+            padding: 12px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            flex: 1;
+            padding: 12px;
+            background: #C97C5C;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        /* Add Book Modal */
+        .add-book-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .option-btn {
+            padding: 14px;
+            background: #f5f5f5;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+        }
+        
+        .option-btn:active {
+            background: #e8e8e8;
+        }
+        
+        .preview-cover {
+            width: 100%;
+            max-height: 150px;
+            border-radius: 10px;
+            object-fit: cover;
+            margin-bottom: 16px;
+        }
+        
+        @media (max-height: 600px) {
+            .modal-content {
+                border-radius: 12px 12px 0 0;
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+    
+    <script>
+        // ============================================
+        // STORAGE & ENCRYPTION HELPERS
+        // ============================================
+        
+        class SecureStorage {
+            constructor() {
+                this.storageKey = 'mein_buecherregal_data_v1';
+            }
+            
+            // Simple encryption (for privacy, not security)
+            encrypt(text) {
+                return btoa(text);
+            }
+            
+            decrypt(encoded) {
+                try {
+                    return atob(encoded);
+                } catch {
+                    return null;
+                }
+            }
+            
+            setPassword(password) {
+                const hash = this.hashPassword(password);
+                localStorage.setItem('mein_buecherregal_pwd', hash);
+            }
+            
+            verifyPassword(password) {
+                const hash = this.hashPassword(password);
+                const stored = localStorage.getItem('mein_buecherregal_pwd');
+                return stored && stored === hash;
+            }
+            
+            hasPassword() {
+                return localStorage.getItem('mein_buecherregal_pwd') !== null;
+            }
+            
+            hashPassword(pwd) {
+                let hash = 0;
+                for (let i = 0; i < pwd.length; i++) {
+                    const char = pwd.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + char;
+                    hash |= 0;
+                }
+                return Math.abs(hash).toString(36) + pwd.length.toString(36);
+            }
+            
+            setBooks(books) {
+                const data = JSON.stringify(books);
+                const encrypted = this.encrypt(data);
+                localStorage.setItem(this.storageKey, encrypted);
+            }
+            
+            getBooks() {
+                const encrypted = localStorage.getItem(this.storageKey);
+                if (!encrypted) return [];
+                const decrypted = this.decrypt(encrypted);
+                try {
+                    return JSON.parse(decrypted);
+                } catch {
+                    return [];
+                }
+            }
+            
+            clearAll() {
+                localStorage.clear();
+            }
+        }
+        
+        const storage = new SecureStorage();
+        
+        // ============================================
+        // STATE MANAGEMENT
+        // ============================================
+        
+        let appState = {
+            isLoggedIn: false,
+            showRatings: false,
+            currentTab: 'aktuell',
+            selectedBook: null,
+            books: [],
+            showModal: false,
+            modalMode: null, // 'login', 'signup', 'forgot', 'addBook', 'detail'
+            expandedYears: new Set(),
+        };
+        
+        // ============================================
+        // BOOK MANAGEMENT
+        // ============================================
+        
+        class BookManager {
+            static addBook(title, author, status, coverData) {
+                const book = {
+                    id: Date.now(),
+                    title: title || 'Unbekannter Titel',
+                    author: author || 'Unbekannter Autor',
+                    status: status || 'ungelesen',
+                    rating: 0,
+                    notes: '',
+                    finishedMonth: null,
+                    finishedYear: null,
+                    coverImageData: coverData || null,
+                    dateAdded: new Date().toISOString(),
+                };
+                appState.books.push(book);
+                storage.setBooks(appState.books);
+                render();
+            }
+            
+            static updateBook(id, updates) {
+                const book = appState.books.find(b => b.id === id);
+                if (book) {
+                    Object.assign(book, updates);
+                    storage.setBooks(appState.books);
+                    render();
+                }
+            }
+            
+            static deleteBook(id) {
+                appState.books = appState.books.filter(b => b.id !== id);
+                storage.setBooks(appState.books);
+                render();
+            }
+            
+            static getByStatus(status) {
+                return appState.books.filter(b => b.status === status);
+            }
+            
+            static getGelesenByYear() {
+                const gelesen = this.getByStatus('gelesen');
+                const years = [...new Set(gelesen.map(b => b.finishedYear).filter(Boolean))].sort((a, b) => b - a);
+                return years.map(year => ({
+                    year,
+                    months: this.getMonthsForYear(year, gelesen)
+                }));
+            }
+            
+            static getMonthsForYear(year, books) {
+                const monthBooks = {};
+                books.filter(b => b.finishedYear === year).forEach(b => {
+                    const month = b.finishedMonth || 0;
+                    if (!monthBooks[month]) monthBooks[month] = [];
+                    monthBooks[month].push(b);
+                });
+                return Object.entries(monthBooks).map(([m, bs]) => ({
+                    month: parseInt(m),
+                    books: bs
+                })).sort((a, b) => b.month - a.month);
+            }
+        }
+        
+        // ============================================
+        // UI RENDERING
+        // ============================================
+        
+        const monthNames = ['', 'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+        
+        function renderStars(rating, interactive = false) {
+            let html = '<div class="rating-' + (interactive ? 'container' : 'container') + '">';
+            for (let i = 1; i <= 5; i++) {
+                html += `<span class="star ${i <= rating ? 'star' : 'star-empty'}" data-rating="${i}">★</span>`;
+            }
+            html += '</div>';
+            return html;
+        }
+        
+        function renderBookCard(book) {
+            let html = '<div class="book-card" data-id="' + book.id + '">';
+            
+            if (book.coverImageData) {
+                html += '<div class="book-cover"><img src="' + book.coverImageData + '" alt="' + book.title + '"></div>';
+            } else {
+                html += '<div class="book-cover">📖</div>';
+            }
+            
+            if (appState.showRatings) {
+                html += '<div class="book-rating">';
+                for (let i = 1; i <= 5; i++) {
+                    html += `<span class="${i <= book.rating ? 'star' : 'star-empty'}">★</span>`;
+                }
+                html += '</div>';
+            }
+            
+            html += '</div>';
+            return html;
+        }
+        
+        function renderLoginModal() {
+            const hasPassword = storage.hasPassword();
+            let html = `
+                <div class="modal show" id="authModal" data-mode="login">
+                    <div class="login-container" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;">
+                        <div class="login-box">
+                            <h1>📚 Mein Bücherregal</h1>
+                            <p>Deine private Buchsammlung</p>
+                            
+                            ${hasPassword ? `
+                                <div id="loginForm">
+                                    <div class="form-group">
+                                        <label>Passwort</label>
+                                        <input type="password" id="loginPassword" placeholder="Passwort eingeben" autocomplete="off">
+                                    </div>
+                                    <button class="login-btn" id="loginSubmit">Anmelden</button>
+                                    <button class="forgot-password-btn" id="forgotLink">Passwort vergessen?</button>
+                                    <div id="loginError" class="error-message"></div>
+                                </div>
+                            ` : `
+                                <div id="signupForm">
+                                    <div class="form-group">
+                                        <label>Passwort setzen</label>
+                                        <input type="password" id="signupPassword" placeholder="Starkes Passwort" autocomplete="off">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Passwort wiederholen</label>
+                                        <input type="password" id="signupConfirm" placeholder="Bestätigen" autocomplete="off">
+                                    </div>
+                                    <button class="login-btn" id="signupSubmit">Passwort erstellen</button>
+                                    <div id="signupError" class="error-message"></div>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                </div>
+            `;
+            return html;
+        }
+        
+        function renderForgotPasswordModal() {
+            return `
+                <div class="modal show" id="forgotModal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2>Passwort zurücksetzen</h2>
+                            <button class="modal-close" id="closeForgot">✕</button>
+                        </div>
+                        <div style="padding: 12px 0;">
+                            <p style="font-size: 14px; color: #666; margin-bottom: 16px;">
+                                Da dein Passwort lokal verschlüsselt gespeichert ist, kann es nicht wiederhergestellt werden. Du kannst es nur zurücksetzen, indem du alle Daten löschst und ein neues Passwort erstellst.
+                            </p>
+                            <button id="resetPassword" class="login-btn" style="background: #d32f2f;">
+                                Alles löschen & neu starten
+                            </button>
+                            <div id="resetError" class="error-message" style="margin-top: 12px;"></div>
+                            <div id="resetSuccess" class="success-message" style="margin-top: 12px;"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function renderDetailModal(book) {
+            const currentYear = new Date().getFullYear();
+            let html = `
+                <div class="modal show detail-modal" id="detailModal" data-book-id="${book.id}">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2>Buchdetails</h2>
+                            <button class="modal-close" id="closeDetail">✕</button>
+                        </div>
+                        
+                        ${book.coverImageData ? `<img src="${book.coverImageData}" class="detail-cover" alt="${book.title}">` : '<div style="width:100%;height:200px;background:#f5f5f5;border-radius:10px;margin-bottom:20px;display:flex;align-items:center;justify-content:center;font-size:48px;">📖</div>'}
+                        
+                        <div class="detail-title">${book.title}</div>
+                        <div class="detail-author">${book.author}</div>
+                        
+                        <div class="detail-section">
+                            <div class="detail-section-title">Meine Bewertung</div>
+                            <div class="rating-container" id="detailRating">
+                                ${Array.from({length: 5}, (_, i) => `<span class="rating-star ${i + 1 <= book.rating ? 'star' : 'star-empty'}" data-rating="${i + 1}">★</span>`).join('')}
+                            </div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <div class="detail-section-title">Notizen</div>
+                            <textarea class="notes-textarea" id="detailNotes" placeholder="Deine Gedanken zum Buch...">${book.notes || ''}</textarea>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <div class="detail-section-title">Status</div>
+                            <select class="dropdown" id="detailStatus">
+                                <option value="aktuell" ${book.status === 'aktuell' ? 'selected' : ''}>Aktuell</option>
+                                <option value="gelesen" ${book.status === 'gelesen' ? 'selected' : ''}>Gelesen</option>
+                                <option value="ungelesen" ${book.status === 'ungelesen' ? 'selected' : ''}>Ungelesen</option>
+                                <option value="wunsch" ${book.status === 'wunsch' ? 'selected' : ''}>Wunsch</option>
+                            </select>
+                        </div>
+                        
+                        ${book.status === 'gelesen' ? `
+                            <div class="detail-section">
+                                <div class="detail-section-title">Beendet</div>
+                                <div class="dropdown-group">
+                                    <div>
+                                        <select class="dropdown" id="detailMonth">
+                                            ${Array.from({length: 12}, (_, i) => `<option value="${i + 1}" ${book.finishedMonth === i + 1 ? 'selected' : ''}>${monthNames[i + 1]}</option>`).join('')}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <select class="dropdown" id="detailYear">
+                                            ${Array.from({length: currentYear - 2000 + 1}, (_, i) => {
+                                                const y = currentYear - i;
+                                                return `<option value="${y}" ${book.finishedYear === y ? 'selected' : ''}>${y}</option>`;
+                                            }).join('')}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="btn-group">
+                            <button class="btn-secondary" id="closeDetailBtn">Schließen</button>
+                            <button class="btn-primary" id="saveDetailBtn">Speichern</button>
+                        </div>
+                        
+                        <button class="delete-btn" id="deleteBtn">Buch löschen</button>
+                    </div>
+                </div>
+            `;
+            return html;
+        }
+        
+        function renderAddBookModal() {
+            return `
+                <div class="modal show" id="addBookModal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2>Buch hinzufügen</h2>
+                            <button class="modal-close" id="closeAddBook">✕</button>
+                        </div>
+                        
+                        <div id="addBookStep1">
+                            <div class="add-book-options">
+                                <button class="option-btn" id="cameraBtn">📷 Foto aufnehmen</button>
+                                <button class="option-btn" id="galleryBtn">🖼️ Aus Galerie wählen</button>
+                                <button class="option-btn" id="barcodeBtn">📱 Barcode scannen</button>
+                            </div>
+                            <div style="margin-top: 20px;">
+                                <div class="form-group">
+                                    <label>Titel</label>
+                                    <input type="text" id="addTitle" placeholder="Buchtitel">
+                                </div>
+                                <div class="form-group">
+                                    <label>Autor</label>
+                                    <input type="text" id="addAuthor" placeholder="Autor">
+                                </div>
+                                <div class="form-group">
+                                    <label>Status</label>
+                                    <select class="dropdown" id="addStatus">
+                                        <option value="aktuell">Aktuell</option>
+                                        <option value="ungelesen">Ungelesen</option>
+                                        <option value="wunsch">Wunsch</option>
+                                        <option value="gelesen">Gelesen</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div id="addBookCover"></div>
+                            <div class="btn-group">
+                                <button class="btn-secondary" id="cancelAddBook">Abbrechen</button>
+                                <button class="btn-primary" id="submitAddBook">Hinzufügen</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function renderMainApp() {
+            const aktuell = BookManager.getByStatus('aktuell');
+            const gelesen = BookManager.getByStatus('gelesen');
+            const ungelesen = BookManager.getByStatus('ungelesen');
+            const wunsch = BookManager.getByStatus('wunsch');
+            
+            let html = `
+                <div class="app-container">
+                    <div class="app-header">
+                        <div class="header-top">
+                            <h1>Mein Bücherregal</h1>
+                            <button class="rating-toggle ${appState.showRatings ? 'active' : ''}" id="ratingToggle">⭐</button>
+                        </div>
+                        <div class="tabs">
+                            <button class="tab ${appState.currentTab === 'aktuell' ? 'active' : ''}" data-tab="aktuell">Aktuell</button>
+                            <button class="tab ${appState.currentTab === 'gelesen' ? 'active' : ''}" data-tab="gelesen">Gelesen</button>
+                            <button class="tab ${appState.currentTab === 'ungelesen' ? 'active' : ''}" data-tab="ungelesen">Ungelesen</button>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content ${appState.currentTab === 'aktuell' ? 'active' : ''}">
+                        ${aktuell.length === 0 ? `
+                            <div class="empty-state">
+                                <div class="empty-state-icon">📚</div>
+                                <div class="empty-state-text">Keine aktuellen Bücher</div>
+                                <div class="empty-state-desc">Starte ein neues Buch und verschiebe es hier hin</div>
+                            </div>
+                        ` : `<div class="book-grid">${aktuell.map(renderBookCard).join('')}</div>`}
+                    </div>
+                    
+                    <div class="tab-content ${appState.currentTab === 'gelesen' ? 'active' : ''}">
+                        ${gelesen.length === 0 ? `
+                            <div class="empty-state">
+                                <div class="empty-state-icon">📚</div>
+                                <div class="empty-state-text">Keine gelesenen Bücher</div>
+                                <div class="empty-state-desc">Markiere Bücher als gelesen und gib das Datum an</div>
+                            </div>
+                        ` : `
+                            <div class="year-section">
+                                ${BookManager.getGelesenByYear().map(({year, months}) => `
+                                    <div>
+                                        <div class="year-header" data-year="${year}">
+                                            <h3>${year}</h3>
+                                            <div class="year-toggle">${appState.expandedYears.has(year) ? '▼' : '▶'}</div>
+                                        </div>
+                                        ${appState.expandedYears.has(year) ? `
+                                            <div style="background: white;">
+                                                ${months.map(({month, books: monthBooks}) => `
+                                                    <div class="month-header">${month > 0 ? monthNames[month] : 'Kein Datum'}</div>
+                                                    <div class="month-books book-grid" style="gap: 14px; padding: 0 14px 14px; grid-template-columns: repeat(3, 1fr);">
+                                                        ${monthBooks.map(renderBookCard).join('')}
+                                                    </div>
+                                                `).join('')}
+                                            </div>
+                                        ` : `
+                                            <div class="book-grid">
+                                                ${months.flatMap(m => m.books).map(renderBookCard).join('')}
+                                            </div>
+                                        `}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `}
+                    </div>
+                    
+                    <div class="tab-content ${appState.currentTab === 'ungelesen' ? 'active' : ''}">
+                        <div class="ungelesen-section">
+                            <div class="section-title">Ungelesen</div>
+                            ${ungelesen.length === 0 ? `
+                                <div style="font-size: 14px; color: #999; padding: 20px 0;">Keine ungelesenen Bücher</div>
+                            ` : `
+                                <div class="book-grid" style="padding: 0 0 14px 0;">
+                                    ${ungelesen.map(renderBookCard).join('')}
+                                </div>
+                            `}
+                        </div>
+                        
+                        <div class="ungelesen-section">
+                            <div class="section-title">Wunsch</div>
+                            ${wunsch.length === 0 ? `
+                                <div style="font-size: 14px; color: #999; padding: 20px 0;">Keine Bücher auf der Wunschliste</div>
+                            ` : `
+                                <div class="book-grid" style="padding: 0 0 14px 0;">
+                                    ${wunsch.map(renderBookCard).join('')}
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                    
+                    <button class="fab" id="addBtn">➕</button>
+                </div>
+            `;
+            return html;
+        }
+        
+        function render() {
+            const app = document.getElementById('app');
+            
+            if (!appState.isLoggedIn) {
+                app.innerHTML = renderLoginModal();
+                attachLoginEvents();
+            } else {
+                app.innerHTML = renderMainApp();
+                attachMainEvents();
+            }
+        }
+        
+        // ============================================
+        // EVENT HANDLERS
+        // ============================================
+        
+        function attachLoginEvents() {
+            const hasPassword = storage.hasPassword();
+            
+            if (hasPassword) {
+                const loginForm = document.getElementById('loginForm');
+                const loginPassword = document.getElementById('loginPassword');
+                const loginSubmit = document.getElementById('loginSubmit');
+                const loginError = document.getElementById('loginError');
+                const forgotLink = document.getElementById('forgotLink');
+                
+                loginSubmit.addEventListener('click', () => {
+                    const pwd = loginPassword.value.trim();
+                    if (!pwd) {
+                        loginError.textContent = 'Bitte Passwort eingeben';
+                        return;
+                    }
+                    
+                    if (storage.verifyPassword(pwd)) {
+                        appState.isLoggedIn = true;
+                        appState.books = storage.getBooks();
+                        render();
+                    } else {
+                        loginError.textContent = 'Passwort falsch';
+                    }
+                });
+                
+                loginPassword.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') loginSubmit.click();
+                });
+                
+                forgotLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    document.getElementById('app').innerHTML += renderForgotPasswordModal();
+                    attachForgotPasswordEvents();
+                });
+            } else {
+                const signupForm = document.getElementById('signupForm');
+                const signupPassword = document.getElementById('signupPassword');
+                const signupConfirm = document.getElementById('signupConfirm');
+                const signupSubmit = document.getElementById('signupSubmit');
+                const signupError = document.getElementById('signupError');
+                
+                signupSubmit.addEventListener('click', () => {
+                    const pwd = signupPassword.value.trim();
+                    const confirm = signupConfirm.value.trim();
+                    
+                    if (!pwd || !confirm) {
+                        signupError.textContent = 'Bitte beide Felder ausfüllen';
+                        return;
+                    }
+                    
+                    if (pwd.length < 4) {
+                        signupError.textContent = 'Passwort muss mindestens 4 Zeichen lang sein';
+                        return;
+                    }
+                    
+                    if (pwd !== confirm) {
+                        signupError.textContent = 'Passwörter stimmen nicht überein';
+                        return;
+                    }
+                    
+                    storage.setPassword(pwd);
+                    appState.isLoggedIn = true;
+                    appState.books = [];
+                    render();
+                });
+                
+                signupConfirm.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') signupSubmit.click();
+                });
+            }
+        }
+        
+        function attachForgotPasswordEvents() {
+            const closeForgot = document.getElementById('closeForgot');
+            const resetPassword = document.getElementById('resetPassword');
+            const resetError = document.getElementById('resetError');
+            const resetSuccess = document.getElementById('resetSuccess');
+            
+            closeForgot.addEventListener('click', () => {
+                document.getElementById('forgotModal').remove();
+            });
+            
+            resetPassword.addEventListener('click', () => {
+                if (confirm('Alle Daten werden gelöscht. Du musst dann ein neues Passwort erstellen.')) {
+                    storage.clearAll();
+                    resetSuccess.textContent = 'Alle Daten gelöscht. Seite wird neu geladen...';
+                    setTimeout(() => location.reload(), 1500);
+                }
+            });
+        }
+        
+        function attachMainEvents() {
+            // Rating toggle
+            document.getElementById('ratingToggle').addEventListener('click', () => {
+                appState.showRatings = !appState.showRatings;
+                render();
+            });
+            
+            // Tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    appState.currentTab = tab.dataset.tab;
+                    render();
+                });
+            });
+            
+            // Book cards
+            document.querySelectorAll('.book-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const id = parseInt(card.dataset.id);
+                    appState.selectedBook = appState.books.find(b => b.id === id);
+                    document.getElementById('app').innerHTML += renderDetailModal(appState.selectedBook);
+                    attachDetailEvents(appState.selectedBook.id);
+                });
+            });
+            
+            // Year headers (gelesen tab)
+            document.querySelectorAll('.year-header').forEach(header => {
+                header.addEventListener('click', () => {
+                    const year = parseInt(header.dataset.year);
+                    if (appState.expandedYears.has(year)) {
+                        appState.expandedYears.delete(year);
+                    } else {
+                        appState.expandedYears.add(year);
+                    }
+                    render();
+                });
+            });
+            
+            // FAB
+            document.getElementById('addBtn').addEventListener('click', () => {
+                document.getElementById('app').innerHTML += renderAddBookModal();
+                attachAddBookEvents();
+            });
+        }
+        
+        function attachDetailEvents(bookId) {
+            const book = appState.books.find(b => b.id === bookId);
+            const closeDetail = document.getElementById('closeDetail');
+            const saveDetailBtn = document.getElementById('saveDetailBtn');
+            const closeDetailBtn = document.getElementById('closeDetailBtn');
+            const deleteBtn = document.getElementById('deleteBtn');
+            
+            // Rating clicks
+            document.querySelectorAll('#detailRating .rating-star').forEach(star => {
+                star.addEventListener('click', () => {
+                    const rating = parseInt(star.dataset.rating);
+                    book.rating = book.rating === rating ? 0 : rating;
+                    render();
+                    setTimeout(() => {
+                        attachDetailEvents(bookId);
+                    }, 0);
+                });
+            });
+            
+            closeDetail.addEventListener('click', () => {
+                document.getElementById('detailModal').remove();
+            });
+            
+            closeDetailBtn.addEventListener('click', () => {
+                document.getElementById('detailModal').remove();
+            });
+            
+            saveDetailBtn.addEventListener('click', () => {
+                const notes = document.getElementById('detailNotes').value;
+                const status = document.getElementById('detailStatus').value;
+                const month = document.getElementById('detailMonth')?.value;
+                const year = document.getElementById('detailYear')?.value;
+                
+                BookManager.updateBook(bookId, {
+                    notes,
+                    status,
+                    finishedMonth: month ? parseInt(month) : null,
+                    finishedYear: year ? parseInt(year) : null,
+                });
+                
+                document.getElementById('detailModal').remove();
+            });
+            
+            deleteBtn.addEventListener('click', () => {
+                if (confirm('Buch wirklich löschen?')) {
+                    BookManager.deleteBook(bookId);
+                    document.getElementById('detailModal').remove();
+                }
+            });
+        }
+        
+        function attachAddBookEvents() {
+            const closeAddBook = document.getElementById('closeAddBook');
+            const cancelAddBook = document.getElementById('cancelAddBook');
+            const submitAddBook = document.getElementById('submitAddBook');
+            const cameraBtn = document.getElementById('cameraBtn');
+            const galleryBtn = document.getElementById('galleryBtn');
+            const barcodeBtn = document.getElementById('barcodeBtn');
+            let coverData = null;
+            
+            closeAddBook.addEventListener('click', () => {
+                document.getElementById('addBookModal').remove();
+            });
+            
+            cancelAddBook.addEventListener('click', () => {
+                document.getElementById('addBookModal').remove();
+            });
+            
+            cameraBtn.addEventListener('click', () => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.capture = 'environment';
+                input.addEventListener('change', async (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (ev) => {
+                            coverData = ev.target.result;
+                            document.getElementById('addBookCover').innerHTML = `<img src="${coverData}" class="preview-cover" alt="Cover">`;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+                input.click();
+            });
+            
+            galleryBtn.addEventListener('click', () => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (ev) => {
+                            coverData = ev.target.result;
+                            document.getElementById('addBookCover').innerHTML = `<img src="${coverData}" class="preview-cover" alt="Cover">`;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+                input.click();
+            });
+            
+            barcodeBtn.addEventListener('click', () => {
+                alert('Barcode-Scanning über Browser erfordert eine spezielle Konfiguration. Bitte gib den ISBN-Code manuell ein oder nutze die Kamera-Option zum Fotografieren des Covers.');
+            });
+            
+            submitAddBook.addEventListener('click', () => {
+                const title = document.getElementById('addTitle').value.trim();
+                const author = document.getElementById('addAuthor').value.trim();
+                const status = document.getElementById('addStatus').value;
+                
+                if (!title && !coverData) {
+                    alert('Bitte Titel eingeben oder Cover hinzufügen');
+                    return;
+                }
+                
+                BookManager.addBook(title, author, status, coverData);
+                document.getElementById('addBookModal').remove();
+            });
+        }
+        
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        
+        function init() {
+            const hasPassword = storage.hasPassword();
+            if (hasPassword) {
+                appState.isLoggedIn = false;
+            } else {
+                appState.isLoggedIn = false;
+            }
+            appState.books = appState.isLoggedIn ? storage.getBooks() : [];
+            render();
+        }
+        
+        // Service Worker registration (PWA support)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(() => {
+                console.log('Service Worker not available');
+            });
+        }
+        
+        // Start app
+        init();
+    </script>
+</body>
+</html>
