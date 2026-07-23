@@ -52,7 +52,7 @@
         
         .login-box {
             width: 100%;
-            max-width: 320px;
+            max-width: 340px;
         }
         
         .login-box h1 {
@@ -68,6 +68,17 @@
             text-align: center;
             color: #666;
             margin-bottom: 32px;
+        }
+        
+        .info-banner {
+            background: #f0f0f0;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: #666;
+            text-align: center;
+            line-height: 1.5;
         }
         
         .form-group {
@@ -142,6 +153,13 @@
         
         .success-message {
             color: #388e3c;
+            font-size: 13px;
+            margin-top: 8px;
+            text-align: center;
+        }
+        
+        .warning-message {
+            color: #f57c00;
             font-size: 13px;
             margin-top: 8px;
             text-align: center;
@@ -644,30 +662,6 @@
             object-fit: cover;
         }
         
-        .scanner-overlay {
-            position: relative;
-            width: 100%;
-            height: 300px;
-            background: #000;
-        }
-        
-        .scanner-reticle {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 250px;
-            height: 150px;
-            border: 2px solid rgba(255, 255, 255, 0.5);
-            border-radius: 10px;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: #999;
-        }
-        
         @media (max-height: 600px) {
             .modal-content {
                 border-radius: 12px 12px 0 0;
@@ -685,6 +679,7 @@
         // ============================================
         const SUPABASE_URL = 'https://qzdgpfwlheitxegcgvzf.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_bqqcDxkFE2PX_gqoESsvOA_p9CeVw9c';
+        const REDIRECT_URL = window.location.origin + window.location.pathname;
         
         const { createClient } = window.supabase;
         const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -703,8 +698,9 @@
             showModal: false,
             modalMode: null,
             expandedYears: new Set(),
-            isLoginMode: true, // true = login, false = signup
+            isLoginMode: true,
             isSyncing: false,
+            emailVerificationSent: false,
         };
         
         // ============================================
@@ -860,7 +856,15 @@
                         <h1>📚 Mein Bücherregal</h1>
                         <p>Deine private Buchsammlung</p>
                         
-                        ${appState.isLoginMode ? `
+                        ${appState.emailVerificationSent ? `
+                            <div style="padding: 20px; text-align: center;">
+                                <div style="font-size: 48px; margin-bottom: 12px;">✅</div>
+                                <h2 style="font-size: 20px; margin-bottom: 12px;">Bestätigungs-E-Mail gesendet!</h2>
+                                <p style="color: #666; margin-bottom: 16px;">Bitte überprüfe dein E-Mail-Postfach und bestätige deine E-Mail-Adresse.</p>
+                                <p style="color: #999; font-size: 13px; margin-bottom: 16px;">Du erhältst eine E-Mail mit einem Bestätigungslink. Klicke darauf, um dein Konto zu aktivieren.</p>
+                                <button class="toggle-link" id="backToLogin" style="margin-top: 20px;">Zurück zum Login</button>
+                            </div>
+                        ` : appState.isLoginMode ? `
                             <div id="loginForm">
                                 <div class="form-group">
                                     <label>E-Mail</label>
@@ -876,6 +880,9 @@
                             </div>
                         ` : `
                             <div id="signupForm">
+                                <div class="info-banner">
+                                    📧 Nach der Registrierung erhältst du eine Bestätigungs-E-Mail. Nur bestätigte E-Mails können sich anmelden.
+                                </div>
                                 <div class="form-group">
                                     <label>E-Mail</label>
                                     <input type="email" id="signupEmail" placeholder="deine@email.de" autocomplete="email">
@@ -888,7 +895,7 @@
                                     <label>Passwort wiederholen</label>
                                     <input type="password" id="signupConfirm" placeholder="Bestätigen" autocomplete="off">
                                 </div>
-                                <button class="login-btn" id="signupSubmit">Registrieren</button>
+                                <button class="login-btn" id="signupSubmit">Registrieren & E-Mail bestätigen</button>
                                 <button class="toggle-link" id="toLogin">Bereits registriert? Anmelden</button>
                                 <div id="signupError" class="error-message"></div>
                             </div>
@@ -1138,7 +1145,14 @@
         // ============================================
         
         function attachLoginEvents() {
-            if (appState.isLoginMode) {
+            if (appState.emailVerificationSent) {
+                const backToLogin = document.getElementById('backToLogin');
+                backToLogin?.addEventListener('click', () => {
+                    appState.emailVerificationSent = false;
+                    appState.isLoginMode = true;
+                    render();
+                });
+            } else if (appState.isLoginMode) {
                 const loginEmail = document.getElementById('loginEmail');
                 const loginPassword = document.getElementById('loginPassword');
                 const loginSubmit = document.getElementById('loginSubmit');
@@ -1164,6 +1178,13 @@
                         });
                         
                         if (error) throw error;
+                        
+                        if (!data.user.email_confirmed_at) {
+                            loginError.textContent = '⚠️ E-Mail-Adresse noch nicht bestätigt. Bitte überprüfe dein E-Mail-Postfach.';
+                            loginSubmit.disabled = false;
+                            loginSubmit.textContent = 'Anmelden';
+                            return;
+                        }
                         
                         appState.isLoggedIn = true;
                         appState.user = data.user;
@@ -1220,18 +1241,20 @@
                         const { data, error } = await supabase.auth.signUp({
                             email,
                             password: pwd,
+                            options: {
+                                emailRedirectTo: REDIRECT_URL,
+                            }
                         });
                         
                         if (error) throw error;
                         
-                        appState.isLoggedIn = true;
-                        appState.user = data.user;
-                        appState.books = [];
+                        // Show verification sent message
+                        appState.emailVerificationSent = true;
                         render();
                     } catch (error) {
                         signupError.textContent = error.message || 'Registrierung fehlgeschlagen';
                         signupSubmit.disabled = false;
-                        signupSubmit.textContent = 'Registrieren';
+                        signupSubmit.textContent = 'Registrieren & E-Mail bestätigen';
                     }
                 });
                 
@@ -1256,6 +1279,7 @@
                 appState.isLoggedIn = false;
                 appState.user = null;
                 appState.isLoginMode = true;
+                appState.emailVerificationSent = false;
                 render();
             });
             
@@ -1357,7 +1381,6 @@
             const barcodeBtn = document.getElementById('barcodeBtn');
             const stopScanner = document.getElementById('stopScanner');
             let coverData = null;
-            let barcodeReaderInstance = null;
             
             closeAddBook.addEventListener('click', () => {
                 document.getElementById('addBookModal').remove();
@@ -1417,7 +1440,6 @@
                     });
                     video.srcObject = stream;
                     
-                    // Use ZXing barcode scanner
                     const codeReader = new ZXing.BrowserMultiFormatReader();
                     
                     const decodingInterval = setInterval(async () => {
@@ -1514,7 +1536,7 @@
             // Check if user is already logged in
             const { data: { user } } = await supabase.auth.getUser();
             
-            if (user) {
+            if (user && user.email_confirmed_at) {
                 appState.isLoggedIn = true;
                 appState.user = user;
                 await BookManager.loadBooks();
