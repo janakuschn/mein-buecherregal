@@ -41,7 +41,7 @@ export default function TabContent({
   return (
     <div className="tab-content">
       {tab === 'ungelesen' && (
-        <div className="sub-filter">
+        <div className="sub-filter ungelesen-filter">
           <button
             className={`sub-filter-btn ${ungelesenFilter === 'alle' ? 'active' : ''}`}
             onClick={() => setUngelesenFilter('alle')}

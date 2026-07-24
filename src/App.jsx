@@ -15,7 +15,7 @@ function AppContent() {
   const [activeTab, setActiveTab] = useState('aktuell')
   const [showRegister, setShowRegister] = useState(false)
   const [selectedBook, setSelectedBook] = useState(null) // null | 'new' | book object
-  const [showRatings, setShowRatings] = useState(false)
+  const [showRatings, setShowRatings] = useState(true)
 
   if (loading) return <LoadingSpinner />
 

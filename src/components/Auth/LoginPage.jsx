@@ -22,27 +22,31 @@ export default function LoginPage() {
   }
 
   return (
-    <form className="auth-form" onSubmit={handleSubmit}>
-      <h1 className="app-title">Mein Bücherregal</h1>
-      <h2>Anmelden</h2>
-      {error && <p className="auth-error">{error}</p>}
-      <input
-        type="email"
-        placeholder="E-Mail"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-      />
-      <input
-        type="password"
-        placeholder="Passwort"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-      />
-      <button type="submit" className="btn-primary" disabled={loading}>
-        {loading ? 'Lädt...' : 'Anmelden'}
-      </button>
-    </form>
+    <>
+      <header className="app-header">
+        <h1 className="app-title">Mein Bücherregal</h1>
+      </header>
+      <form className="auth-form" onSubmit={handleSubmit}>
+        <h2>Anmelden</h2>
+        {error && <p className="auth-error">{error}</p>}
+        <input
+          type="email"
+          placeholder="E-Mail"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <input
+          type="password"
+          placeholder="Passwort"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <button type="submit" className="btn-primary" disabled={loading}>
+          {loading ? 'Lädt...' : 'Anmelden'}
+        </button>
+      </form>
+    </>
   )
 }

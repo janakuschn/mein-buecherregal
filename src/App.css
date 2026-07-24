@@ -88,9 +88,7 @@ h2 {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   min-height: 100vh;
-  padding: 2rem 1.5rem;
 }
 
 .auth-form {
@@ -99,6 +97,10 @@ h2 {
   gap: 0.75rem;
   width: 100%;
   max-width: 340px;
+  flex: 1;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  margin: 0 auto;
 }
 
 .auth-form input {
@@ -253,6 +255,21 @@ h2 {
   background: var(--color-text);
   color: white;
   border-color: var(--color-text);
+}
+
+/* Ungelesen: "Alle" / "Wunschliste" in Rosa statt Schwarz/Grau -
+   ausgewählt = rosa gefüllt (wie der Header), nicht ausgewählt = rosa
+   umrandet/beschriftet (wie der Löschen-Button) */
+.ungelesen-filter .sub-filter-btn {
+  background: white;
+  border-color: var(--color-header-bg);
+  color: var(--color-header-bg);
+}
+
+.ungelesen-filter .sub-filter-btn.active {
+  background: var(--color-header-bg);
+  color: var(--color-header-text);
+  border-color: var(--color-header-bg);
 }
 
 .rating-filter-btn {
