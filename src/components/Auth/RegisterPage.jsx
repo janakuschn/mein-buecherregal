@@ -1,6 +1,22 @@
 // ZIEL-PFAD: src/components/Auth/RegisterPage.jsx
 import React, { useState } from 'react'
 import { signUp } from '../../services/authService'
+import { RATING_IMAGES } from '../Books/StarRating'
+
+function AuthHeader() {
+  return (
+    <header className="app-header">
+      <div className="auth-header-inner">
+        <h1 className="app-title">Mein Bücherregal</h1>
+        <div className="auth-header-icons">
+          {RATING_IMAGES.map((src, i) => (
+            <img key={i} src={src} alt="" />
+          ))}
+        </div>
+      </div>
+    </header>
+  )
+}
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('')
@@ -26,9 +42,7 @@ export default function RegisterPage() {
   if (success) {
     return (
       <>
-        <header className="app-header">
-          <h1 className="app-title">Mein Bücherregal</h1>
-        </header>
+        <AuthHeader />
         <div className="auth-form">
           <p>Bitte bestätige deine E-Mail-Adresse über den Link, den wir dir geschickt haben.</p>
         </div>
@@ -38,9 +52,7 @@ export default function RegisterPage() {
 
   return (
     <>
-      <header className="app-header">
-        <h1 className="app-title">Mein Bücherregal</h1>
-      </header>
+      <AuthHeader />
       <form className="auth-form" onSubmit={handleSubmit}>
         <h2>Registrieren</h2>
         {error && <p className="auth-error">{error}</p>}
