@@ -11,7 +11,7 @@ const FALLBACK_COVER =
 </svg>
 `)
 
-export default function BookCard({ book, onClick }) {
+export default function BookCard({ book, onClick, showRatings }) {
   return (
     <div className="book-card" onClick={() => onClick(book)}>
       <div className="book-cover-wrapper">
@@ -24,7 +24,7 @@ export default function BookCard({ book, onClick }) {
           }}
         />
       </div>
-      <StarRating rating={book.rating || 0} readOnly size="small" />
+      {showRatings && <StarRating rating={book.rating || 0} readOnly size="small" />}
     </div>
   )
 }

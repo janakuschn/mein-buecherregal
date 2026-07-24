@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Debug-/Rohdateien aus der Icon-/Smiley-Bearbeitung (nicht Teil der App)
+public/_debug_*.png
+public/icon-square.png
+Icon.png
+Smileys/

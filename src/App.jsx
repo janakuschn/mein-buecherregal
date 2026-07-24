@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './components/Auth/AuthContext'
 import LoginPage from './components/Auth/LoginPage'
 import RegisterPage from './components/Auth/RegisterPage'
 import Header from './components/Layout/Header'
+import Footer from './components/Layout/Footer'
 import TabNavigation from './components/Tabs/TabNavigation'
 import TabContent from './components/Tabs/TabContent'
 import LoadingSpinner from './components/Common/LoadingSpinner'
@@ -14,7 +15,7 @@ function AppContent() {
   const [activeTab, setActiveTab] = useState('aktuell')
   const [showRegister, setShowRegister] = useState(false)
   const [selectedBook, setSelectedBook] = useState(null) // null | 'new' | book object
-  const [wishlistOnly, setWishlistOnly] = useState(false)
+  const [showRatings, setShowRatings] = useState(false)
 
   if (loading) return <LoadingSpinner />
 
@@ -46,28 +47,23 @@ function AppContent() {
     )
   }
 
-  const handleWishlistClick = () => {
-    setActiveTab('ungelesen')
-    setWishlistOnly(true)
-  }
-
-  const handleTabChange = (tab) => {
-    setActiveTab(tab)
-    setWishlistOnly(false)
-  }
-
   return (
     <div className="app-layout">
-      <Header onWishlistClick={handleWishlistClick} />
-      <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
+      <Header
+        activeTab={activeTab}
+        showRatings={showRatings}
+        onToggleRatings={() => setShowRatings((v) => !v)}
+      />
+      <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
       <TabContent
         tab={activeTab}
-        wishlistOnly={wishlistOnly}
+        showRatings={showRatings}
         selectedBook={selectedBook}
         onSelectBook={setSelectedBook}
         onAddRequest={() => setSelectedBook('new')}
         onCloseModal={() => setSelectedBook(null)}
       />
+      <Footer />
     </div>
   )
 }

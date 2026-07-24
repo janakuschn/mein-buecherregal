@@ -37,6 +37,7 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
   const [lookupError, setLookupError] = useState('')
   const [lookupLoading, setLookupLoading] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
 
   const handleIsbnLookup = async (scannedIsbn) => {
     const code = scannedIsbn || isbn
@@ -64,6 +65,7 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
       return
     }
     setSaving(true)
+    setSaveError('')
     const data = {
       title: title.trim(),
       author: author.trim() || null,
@@ -77,8 +79,21 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
     }
     try {
       await onSave(data)
+    } catch (err) {
+      console.error('[Speichern] Fehler:', err)
+      if (err?.code === '23505') {
+        setSaveError('Dieses Buch (ISBN) ist bereits in deiner Bibliothek vorhanden.')
+      } else {
+        setSaveError(err?.message || 'Speichern fehlgeschlagen. Bitte versuche es erneut.')
+      }
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleDeleteClick = () => {
+    if (window.confirm(`"${title || 'Dieses Buch'}" wirklich unwiderruflich löschen?`)) {
+      onDelete()
     }
   }
 
@@ -93,48 +108,50 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
           <BarcodeScanner onDetected={handleIsbnLookup} onClose={() => setShowScanner(false)} />
         )}
 
-        <div className="modal-cover-wrapper">
-          {coverUrl ? (
-            <img src={coverUrl} alt={title} className="modal-cover" />
-          ) : (
-            <div className="modal-cover-placeholder">Kein Cover</div>
-          )}
-        </div>
-
-        {isNew && (
-          <div className="isbn-lookup-row">
-            <input
-              type="text"
-              placeholder="ISBN eingeben"
-              value={isbn}
-              onChange={(e) => setIsbn(e.target.value)}
-            />
-            <button className="btn-secondary" onClick={() => handleIsbnLookup()} disabled={lookupLoading}>
-              {lookupLoading ? 'Suche...' : 'Suchen'}
-            </button>
-            <button className="btn-secondary" onClick={() => setShowScanner(true)}>
-              📷 Scannen
-            </button>
+        <div className="modal-top-panel">
+          <div className="modal-cover-wrapper">
+            {coverUrl ? (
+              <img src={coverUrl} alt={title} className="modal-cover" />
+            ) : (
+              <div className="modal-cover-placeholder">Kein Cover</div>
+            )}
           </div>
-        )}
-        {lookupError && <p className="auth-error">{lookupError}</p>}
 
-        <input
-          className="modal-title-input"
-          type="text"
-          placeholder="Titel"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-        <input
-          className="modal-author-input"
-          type="text"
-          placeholder="Autor"
-          value={author}
-          onChange={(e) => setAuthor(e.target.value)}
-        />
+          {isNew && (
+            <div className="isbn-lookup-row">
+              <input
+                type="text"
+                placeholder="ISBN eingeben"
+                value={isbn}
+                onChange={(e) => setIsbn(e.target.value)}
+              />
+              <button className="btn-secondary" onClick={() => handleIsbnLookup()} disabled={lookupLoading}>
+                {lookupLoading ? 'Suche...' : 'Suchen'}
+              </button>
+              <button className="btn-secondary" onClick={() => setShowScanner(true)}>
+                📷 Scannen
+              </button>
+            </div>
+          )}
+          {lookupError && <p className="auth-error">{lookupError}</p>}
 
-        <StarRating rating={rating} onChange={setRating} />
+          <input
+            className="modal-title-input"
+            type="text"
+            placeholder="Titel"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+          <input
+            className="modal-author-input"
+            type="text"
+            placeholder="Autor"
+            value={author}
+            onChange={(e) => setAuthor(e.target.value)}
+          />
+
+          <StarRating rating={rating} onChange={setRating} />
+        </div>
 
         <textarea
           className="modal-notes"
@@ -180,12 +197,14 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
           </div>
         )}
 
+        {saveError && <p className="auth-error">{saveError}</p>}
+
         <div className="modal-actions">
           <button className="btn-primary" onClick={handleSave} disabled={saving}>
             {saving ? 'Speichert...' : 'Speichern'}
           </button>
           {onDelete && (
-            <button className="btn-danger" onClick={onDelete}>
+            <button className="btn-danger" onClick={handleDeleteClick}>
               Löschen
             </button>
           )}
