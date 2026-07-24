@@ -1,8 +1,10 @@
 // ZIEL-PFAD: src/components/Books/BookModal.jsx
 import React, { useState } from 'react'
-import StarRating from './StarRating'
+import StarRating, { RATING_IMAGES } from './StarRating'
 import BarcodeScanner from '../Scanner/BarcodeScanner'
 import { lookupByISBN } from '../../services/openlibrary'
+
+const heartIcon = RATING_IMAGES[4] // ehemals "Bild 5"
 
 const STATUS_OPTIONS = [
   { id: 'aktuell', label: 'Aktuell' },
@@ -113,7 +115,9 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
             {coverUrl ? (
               <img src={coverUrl} alt={title} className="modal-cover" />
             ) : (
-              <div className="modal-cover-placeholder">Kein Cover</div>
+              <div className="modal-cover-placeholder">
+                <img src={heartIcon} alt="Kein Cover" className="modal-cover-placeholder-icon" />
+              </div>
             )}
           </div>
 
