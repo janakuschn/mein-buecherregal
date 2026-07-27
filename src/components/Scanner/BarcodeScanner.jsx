@@ -82,8 +82,14 @@ export default function BarcodeScanner({ onDetected, onTextDetected, onClose }) 
         const query = sorted.slice(0, 2).join(' ')
         onTextDetected(query)
       } catch (e) {
+        // Detaillierten Fehler in der Konsole ausgeben (F12 -> Console),
+        // damit sich ein Fehlschlag konkret nachvollziehen lässt, statt nur
+        // die allgemeine Meldung im UI zu sehen.
+        console.error('[Texterkennung] Fehler:', e)
         if (isMounted) {
-          setError('Texterkennung fehlgeschlagen. Bitte Titel manuell eingeben.')
+          setError(
+            `Texterkennung fehlgeschlagen: ${e?.message || 'Unbekannter Fehler'}. Bitte Titel manuell eingeben.`
+          )
           setOcrRunning(false)
         }
       }
