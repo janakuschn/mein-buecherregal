@@ -141,6 +141,10 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
       console.error('[Speichern] Fehler:', err)
       if (err?.code === '23505') {
         setSaveError('Dieses Buch (ISBN) ist bereits in deiner Bibliothek vorhanden.')
+      } else if (err?.message?.toLowerCase().includes('schema cache')) {
+        setSaveError(
+          'Datenbank ist noch nicht aktuell: Bitte zuerst "add_lent_columns.sql" im Supabase SQL Editor ausführen (fügt lent_to/lent_since zur Tabelle "books" hinzu).'
+        )
       } else {
         setSaveError(err?.message || 'Speichern fehlgeschlagen. Bitte versuche es erneut.')
       }
