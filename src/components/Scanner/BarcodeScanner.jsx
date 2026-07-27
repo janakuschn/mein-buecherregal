@@ -65,10 +65,16 @@ export default function BarcodeScanner({ onDetected, onTextDetected, onClose }) 
       if (finished || !videoRef.current) return
       finished = true
       if (fallbackTimer) clearTimeout(fallbackTimer)
-      controls?.stop()
       setBarcodeActive(false)
       setOcrRunning(true)
       setStatus('Erkenne Text auf dem Cover...')
+
+      // WICHTIG: Das Bild muss aufgenommen werden, BEVOR die Kamera
+      // gestoppt wird. Vorher wurde controls.stop() zuerst aufgerufen -
+      // dadurch war der Kamera-Stream beim Warten auf ein gültiges Bild
+      // schon beendet und video.videoWidth/videoHeight wurden nie mehr
+      // gesetzt ("Kamerabild konnte nicht geladen werden.").
+      let dataUrl
       try {
         const video = videoRef.current
         await waitForVideoReady(video)
@@ -83,8 +89,24 @@ export default function BarcodeScanner({ onDetected, onTextDetected, onClose }) 
         // (v.a. iOS Safari als installierte PWA) null zurück, was dort zu
         // "readAsArrayBuffer: parameter 1 is not of type Blob" führte.
         // toDataURL() ist deutlich zuverlässiger unterstützt.
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.92)
+        dataUrl = canvas.toDataURL('image/jpeg', 0.92)
+      } catch (e) {
+        console.error('[Texterkennung] Fehler bei der Bildaufnahme:', e)
+        controls?.stop()
+        if (isMounted) {
+          setError(
+            `Bildaufnahme fehlgeschlagen: ${e?.message || 'Unbekannter Fehler'}. Bitte Titel manuell eingeben.`
+          )
+          setOcrRunning(false)
+        }
+        return
+      }
 
+      // Bild ist im Kasten - Kamera kann jetzt gestoppt werden, die
+      // Texterkennung selbst braucht sie nicht mehr.
+      controls?.stop()
+
+      try {
         const { data } = await Tesseract.recognize(dataUrl, 'deu+eng')
         const lines = data.text
           .split('\n')
