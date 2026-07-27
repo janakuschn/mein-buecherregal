@@ -15,6 +15,31 @@ import Tesseract from 'tesseract.js'
 
 const OCR_FALLBACK_DELAY_MS = 4000
 
+// Wartet, bis das <video>-Element tatsächlich ein Bild mit Maßen liefert
+// (video.videoWidth/videoHeight). Direkt nach dem Start der Kamera oder
+// kurz nach dem Öffnen des Scanners kann das noch 0 sein, auch wenn keine
+// Fehlermeldung kam - das führte zuvor zum Abbruch "Kamerabild noch nicht
+// bereit." Statt sofort aufzugeben, wird jetzt bis zu 3 Sekunden gewartet.
+function waitForVideoReady(video, timeoutMs = 3000) {
+  return new Promise((resolve, reject) => {
+    if (video.videoWidth && video.videoHeight) {
+      resolve()
+      return
+    }
+    const start = Date.now()
+    const check = () => {
+      if (video.videoWidth && video.videoHeight) {
+        resolve()
+      } else if (Date.now() - start > timeoutMs) {
+        reject(new Error('Kamerabild konnte nicht geladen werden.'))
+      } else {
+        setTimeout(check, 150)
+      }
+    }
+    check()
+  })
+}
+
 export default function BarcodeScanner({ onDetected, onTextDetected, onClose }) {
   const videoRef = useRef(null)
   const runOcrRef = useRef(null)
@@ -46,9 +71,7 @@ export default function BarcodeScanner({ onDetected, onTextDetected, onClose }) 
       setStatus('Erkenne Text auf dem Cover...')
       try {
         const video = videoRef.current
-        if (!video.videoWidth || !video.videoHeight) {
-          throw new Error('Kamerabild noch nicht bereit.')
-        }
+        await waitForVideoReady(video)
         const canvas = document.createElement('canvas')
         canvas.width = video.videoWidth
         canvas.height = video.videoHeight
