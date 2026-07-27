@@ -5,6 +5,7 @@ import LoginPage from './components/Auth/LoginPage'
 import RegisterPage from './components/Auth/RegisterPage'
 import Header from './components/Layout/Header'
 import Footer from './components/Layout/Footer'
+import VersionBadge from './components/Layout/VersionBadge'
 import TabNavigation from './components/Tabs/TabNavigation'
 import TabContent from './components/Tabs/TabContent'
 import LoadingSpinner from './components/Common/LoadingSpinner'
@@ -80,6 +81,7 @@ export default function App() {
   return (
     <AuthProvider>
       <AppContent />
+      <VersionBadge />
     </AuthProvider>
   )
 }
