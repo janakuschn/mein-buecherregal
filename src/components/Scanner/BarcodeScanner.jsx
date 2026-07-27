@@ -45,13 +45,24 @@ export default function BarcodeScanner({ onDetected, onTextDetected, onClose }) 
       setOcrRunning(true)
       setStatus('Erkenne Text auf dem Cover...')
       try {
+        const video = videoRef.current
+        if (!video.videoWidth || !video.videoHeight) {
+          throw new Error('Kamerabild noch nicht bereit.')
+        }
         const canvas = document.createElement('canvas')
-        canvas.width = videoRef.current.videoWidth
-        canvas.height = videoRef.current.videoHeight
+        canvas.width = video.videoWidth
+        canvas.height = video.videoHeight
         const ctx = canvas.getContext('2d')
-        ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height)
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
 
-        const { data } = await Tesseract.recognize(canvas, 'deu+eng')
+        // Als Data-URL (statt des Canvas-Elements selbst) an Tesseract
+        // übergeben - canvas.toBlob() liefert auf manchen Geräten/Browsern
+        // (v.a. iOS Safari als installierte PWA) null zurück, was dort zu
+        // "readAsArrayBuffer: parameter 1 is not of type Blob" führte.
+        // toDataURL() ist deutlich zuverlässiger unterstützt.
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.92)
+
+        const { data } = await Tesseract.recognize(dataUrl, 'deu+eng')
         const lines = data.text
           .split('\n')
           .map((l) => l.trim())
