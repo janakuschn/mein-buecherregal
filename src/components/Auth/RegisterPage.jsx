@@ -1,18 +1,12 @@
 // ZIEL-PFAD: src/components/Auth/RegisterPage.jsx
 import React, { useState } from 'react'
 import { signUp } from '../../services/authService'
-import { RATING_IMAGES } from '../Books/StarRating'
 
 function AuthHeader() {
   return (
     <header className="app-header">
       <div className="auth-header-inner">
         <h1 className="app-title">Mein Bücherregal</h1>
-        <div className="auth-header-icons">
-          {RATING_IMAGES.map((src, i) => (
-            <img key={i} src={src} alt="" />
-          ))}
-        </div>
       </div>
     </header>
   )
@@ -65,10 +59,10 @@ export default function RegisterPage() {
         />
         <input
           type="password"
-          placeholder="Passwort (mind. 6 Zeichen)"
+          placeholder="Passwort (mind. 8 Zeichen)"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          minLength={6}
+          minLength={8}
           required
         />
         <button type="submit" className="btn-primary" disabled={loading}>

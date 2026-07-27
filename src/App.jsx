@@ -10,6 +10,12 @@ import TabContent from './components/Tabs/TabContent'
 import LoadingSpinner from './components/Common/LoadingSpinner'
 import './App.css'
 
+// Registrierung ist bewusst ausgeblendet: Nutzer werden aktuell manuell in
+// Supabase angelegt (siehe Erklärung an Jana). Der Registrierungs-Code bleibt
+// vollständig erhalten - einfach auf true setzen, um den Link "Hier
+// registrieren" wieder sichtbar zu machen.
+const REGISTRATION_VISIBLE = false
+
 function AppContent() {
   const { user, loading } = useAuth()
   const [activeTab, setActiveTab] = useState('aktuell')
@@ -22,7 +28,7 @@ function AppContent() {
   if (!user) {
     return (
       <div className="auth-container">
-        {showRegister ? (
+        {showRegister && REGISTRATION_VISIBLE ? (
           <>
             <RegisterPage />
             <p className="auth-switch">
@@ -35,12 +41,14 @@ function AppContent() {
         ) : (
           <>
             <LoginPage />
-            <p className="auth-switch">
-              Kein Konto?{' '}
-              <button className="link-button" onClick={() => setShowRegister(true)}>
-                Hier registrieren
-              </button>
-            </p>
+            {REGISTRATION_VISIBLE && (
+              <p className="auth-switch">
+                Kein Konto?{' '}
+                <button className="link-button" onClick={() => setShowRegister(true)}>
+                  Hier registrieren
+                </button>
+              </p>
+            )}
           </>
         )}
       </div>

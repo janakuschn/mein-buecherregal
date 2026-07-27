@@ -1,7 +1,6 @@
 // ZIEL-PFAD: src/components/Auth/LoginPage.jsx
 import React, { useState } from 'react'
 import { signIn } from '../../services/authService'
-import { RATING_IMAGES } from '../Books/StarRating'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -27,11 +26,6 @@ export default function LoginPage() {
       <header className="app-header">
         <div className="auth-header-inner">
           <h1 className="app-title">Mein Bücherregal</h1>
-          <div className="auth-header-icons">
-            {RATING_IMAGES.map((src, i) => (
-              <img key={i} src={src} alt="" />
-            ))}
-          </div>
         </div>
       </header>
       <form className="auth-form" onSubmit={handleSubmit}>
