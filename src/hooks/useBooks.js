@@ -8,6 +8,22 @@ import {
   reorderBooks as persistReorder,
 } from '../services/bookService'
 
+// Gleiche Sortierlogik wie die Datenbank-Abfrage in fetchBooks() (sort_order
+// aufsteigend, ohne Wert zuletzt; bei Gleichstand neuestes Erstelldatum
+// zuerst). Wird nach dem lokalen Reorder-Update angewendet, damit die
+// Reihenfolge auf dem Bildschirm SOFORT stimmt - ohne Neuladen der Seite.
+function compareBooks(a, b) {
+  const aHasOrder = a.sort_order !== null && a.sort_order !== undefined
+  const bHasOrder = b.sort_order !== null && b.sort_order !== undefined
+  if (aHasOrder && bHasOrder && a.sort_order !== b.sort_order) {
+    return a.sort_order - b.sort_order
+  }
+  if (aHasOrder !== bHasOrder) {
+    return aHasOrder ? -1 : 1
+  }
+  return new Date(b.created_at) - new Date(a.created_at)
+}
+
 export function useBooks() {
   const [books, setBooks] = useState([])
   const [loading, setLoading] = useState(true)
@@ -68,9 +84,23 @@ export function useBooks() {
     const updates = reorderedGroup.map((book, i) => ({ id: book.id, sort_order: values[i] }))
     const updateMap = new Map(updates.map((u) => [u.id, u.sort_order]))
 
-    setBooks((prev) => prev.map((b) => (updateMap.has(b.id) ? { ...b, sort_order: updateMap.get(b.id) } : b)))
+    // Sofort im UI-State neu sortieren (nicht nur den sort_order-Wert
+    // ändern) - sonst bleibt die alte Reihenfolge auf dem Bildschirm
+    // stehen, bis die Seite neu geladen wird und die Bücher neu vom
+    // Server (schon korrekt sortiert) geholt werden.
+    setBooks((prev) => {
+      const next = prev.map((b) => (updateMap.has(b.id) ? { ...b, sort_order: updateMap.get(b.id) } : b))
+      return next.sort(compareBooks)
+    })
 
-    await persistReorder(updates)
+    try {
+      await persistReorder(updates)
+    } catch (err) {
+      // Server-Update fehlgeschlagen: lokale Reihenfolge zurücksetzen,
+      // damit UI und Datenbank nicht dauerhaft auseinanderlaufen.
+      await loadBooks()
+      throw err
+    }
   }
 
   return { books, loading, error, createBook, editBook, removeBook, reorderBooks, refetch: loadBooks }
