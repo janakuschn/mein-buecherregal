@@ -84,14 +84,13 @@ export default function TabContent({
           onBookClick={onSelectBook}
           showRatings={showRatings}
           filterActive={ratingFilter !== null}
-          onReorder={reorderBooks}
         />
       ) : (
         <BookGrid
           books={filteredBooks}
           onBookClick={onSelectBook}
           showProgress={tab === 'aktuell'}
-          sortable={tab === 'aktuell'}
+          sortable={tab === 'aktuell' || tab === 'ungelesen'}
           onReorder={reorderBooks}
         />
       )}
@@ -126,7 +125,7 @@ export default function TabContent({
   )
 }
 
-function GelesenView({ books, onBookClick, showRatings, filterActive, onReorder }) {
+function GelesenView({ books, onBookClick, showRatings, filterActive }) {
   const grouped = groupBooksByYear(books)
   const years = Object.keys(grouped).sort((a, b) => b - a)
 
@@ -154,8 +153,7 @@ function GelesenView({ books, onBookClick, showRatings, filterActive, onReorder 
                   books={grouped[year][month]}
                   onBookClick={onBookClick}
                   showRatings={showRatings}
-                  sortable={!filterActive}
-                  onReorder={onReorder}
+                  sortable={false}
                 />
               </div>
             ))}

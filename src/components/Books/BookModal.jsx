@@ -3,8 +3,13 @@ import React, { useState } from 'react'
 import StarRating, { RATING_IMAGES } from './StarRating'
 import BarcodeScanner from '../Scanner/BarcodeScanner'
 import { lookupByISBN, lookupByText } from '../../services/openlibrary'
+import sleepingHeart from '../../assets/icons/sleeping-heart.png'
 
 const heartIcon = RATING_IMAGES[4] // ehemals "Bild 5"
+
+function todayIsoDate() {
+  return new Date().toISOString().slice(0, 10)
+}
 
 const STATUS_OPTIONS = [
   { id: 'aktuell', label: 'Aktuell' },
@@ -41,6 +46,33 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
   const [lookupLoading, setLookupLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
+
+  // Verleihen: solange nicht "Zurückbekommen" gedrückt wird, bleibt das
+  // Buch als verliehen markiert (transparent + Schlaf-Herz-Badge).
+  const [lentTo, setLentTo] = useState(book?.lent_to || '')
+  const [lentSince, setLentSince] = useState(book?.lent_since || '')
+  const [showLendForm, setShowLendForm] = useState(false)
+  const [lendFormName, setLendFormName] = useState('')
+  const [lendFormDate, setLendFormDate] = useState(todayIsoDate())
+  const isLent = !!lentTo
+
+  const openLendForm = () => {
+    setLendFormName('')
+    setLendFormDate(todayIsoDate())
+    setShowLendForm(true)
+  }
+
+  const confirmLend = () => {
+    if (!lendFormName.trim()) return
+    setLentTo(lendFormName.trim())
+    setLentSince(lendFormDate)
+    setShowLendForm(false)
+  }
+
+  const handleReturn = () => {
+    setLentTo('')
+    setLentSince('')
+  }
 
   const handleIsbnLookup = async (scannedIsbn) => {
     const code = scannedIsbn || isbn
@@ -100,6 +132,8 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
       progress: Number(progress) || 0,
       completed_month: status === 'gelesen' ? Number(completedMonth) : null,
       completed_year: status === 'gelesen' ? Number(completedYear) : null,
+      lent_to: lentTo.trim() || null,
+      lent_since: lentTo.trim() ? lentSince || todayIsoDate() : null,
     }
     try {
       await onSave(data)
@@ -137,13 +171,17 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
         )}
 
         <div className="modal-top-panel">
-          <div className="modal-cover-wrapper">
+          <div className={`modal-cover-wrapper ${isLent ? 'modal-cover-wrapper-lent' : ''}`}>
             {coverUrl ? (
               <img src={coverUrl} alt={title} className="modal-cover" />
             ) : (
               <div className="modal-cover-placeholder">
                 <img src={heartIcon} alt="Kein Cover" className="modal-cover-placeholder-icon" />
+                <p className="modal-cover-placeholder-title">{title}</p>
               </div>
+            )}
+            {isLent && (
+              <img src={sleepingHeart} alt="Verliehen" className="modal-lent-badge" />
             )}
           </div>
 
@@ -246,6 +284,50 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
             </div>
           </div>
         )}
+
+        <div className="lend-section">
+          {isLent ? (
+            <div className="lend-status">
+              <span>
+                📖 Verliehen an <strong>{lentTo}</strong> seit{' '}
+                {lentSince
+                  ? new Date(lentSince).toLocaleDateString('de-DE')
+                  : ''}
+              </span>
+              <button className="btn-secondary" onClick={handleReturn}>
+                Zurückbekommen
+              </button>
+            </div>
+          ) : showLendForm ? (
+            <div className="lend-form">
+              <div className="lend-form-row">
+                <input
+                  type="text"
+                  placeholder="An wen?"
+                  value={lendFormName}
+                  onChange={(e) => setLendFormName(e.target.value)}
+                />
+                <input
+                  type="date"
+                  value={lendFormDate}
+                  onChange={(e) => setLendFormDate(e.target.value)}
+                />
+              </div>
+              <div className="lend-form-actions">
+                <button className="btn-primary" onClick={confirmLend} disabled={!lendFormName.trim()}>
+                  Verleihen bestätigen
+                </button>
+                <button className="btn-secondary" onClick={() => setShowLendForm(false)}>
+                  Abbrechen
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button className="btn-secondary" onClick={openLendForm}>
+              📖 Verleihen
+            </button>
+          )}
+        </div>
 
         {saveError && <p className="auth-error">{saveError}</p>}
 
