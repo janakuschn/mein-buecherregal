@@ -2,7 +2,7 @@
 import React, { useState } from 'react'
 import StarRating, { RATING_IMAGES } from './StarRating'
 import BarcodeScanner from '../Scanner/BarcodeScanner'
-import { lookupByISBN } from '../../services/openlibrary'
+import { lookupByISBN, lookupByText } from '../../services/openlibrary'
 
 const heartIcon = RATING_IMAGES[4] // ehemals "Bild 5"
 
@@ -62,6 +62,26 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
     }
   }
 
+  // Wird aufgerufen, wenn beim Scannen kein Barcode gefunden wurde und
+  // stattdessen der per Texterkennung gelesene Cover-Text zur Suche
+  // verwendet wird.
+  const handleTextLookup = async (recognizedText) => {
+    setShowScanner(false)
+    setLookupLoading(true)
+    setLookupError('')
+    try {
+      const result = await lookupByText(recognizedText)
+      setIsbn(result.isbn)
+      setTitle(result.title)
+      setAuthor(result.author)
+      setCoverUrl(result.cover_url)
+    } catch (err) {
+      setLookupError(err.message)
+    } finally {
+      setLookupLoading(false)
+    }
+  }
+
   const handleSave = async () => {
     if (!title.trim()) {
       alert('Bitte einen Titel eingeben.')
@@ -109,7 +129,11 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
         </button>
 
         {showScanner && (
-          <BarcodeScanner onDetected={handleIsbnLookup} onClose={() => setShowScanner(false)} />
+          <BarcodeScanner
+            onDetected={handleIsbnLookup}
+            onTextDetected={handleTextLookup}
+            onClose={() => setShowScanner(false)}
+          />
         )}
 
         <div className="modal-top-panel">
@@ -134,7 +158,11 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
               <button className="btn-secondary" onClick={() => handleIsbnLookup()} disabled={lookupLoading}>
                 {lookupLoading ? 'Suche...' : 'Suchen'}
               </button>
-              <button className="btn-secondary" onClick={() => setShowScanner(true)}>
+              <button
+                className="btn-secondary"
+                onClick={() => setShowScanner(true)}
+                title="Erkennt automatisch Barcode oder Cover-Text"
+              >
                 📷 Scannen
               </button>
             </div>

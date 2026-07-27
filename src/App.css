@@ -856,6 +856,13 @@ h2 {
   text-align: center;
 }
 
+.scanner-status {
+  margin: 0.75rem 0 0.25rem;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
 /* ---------- Loading ---------- */
 .loading-spinner-wrapper {
   display: flex;
