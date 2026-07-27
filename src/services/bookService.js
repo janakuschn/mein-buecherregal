@@ -5,9 +5,19 @@ export async function fetchBooks() {
   const { data, error } = await supabase
     .from('books')
     .select('*')
+    .order('sort_order', { ascending: true, nullsFirst: false })
     .order('created_at', { ascending: false })
   if (error) throw error
   return data
+}
+
+export async function reorderBooks(updates) {
+  // updates: [{ id, sort_order }, ...]
+  await Promise.all(
+    updates.map(({ id, sort_order }) =>
+      supabase.from('books').update({ sort_order }).eq('id', id)
+    )
+  )
 }
 
 export async function addBook(book) {

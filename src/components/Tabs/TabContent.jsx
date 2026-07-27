@@ -15,7 +15,7 @@ export default function TabContent({
   onAddRequest,
   onCloseModal,
 }) {
-  const { books, loading, error, createBook, editBook, removeBook } = useBooks()
+  const { books, loading, error, createBook, editBook, removeBook, reorderBooks } = useBooks()
   const [ungelesenFilter, setUngelesenFilter] = useState('alle') // 'alle' | 'wunsch'
   const [ratingFilter, setRatingFilter] = useState(null) // null | 1-5
 
@@ -84,9 +84,16 @@ export default function TabContent({
           onBookClick={onSelectBook}
           showRatings={showRatings}
           filterActive={ratingFilter !== null}
+          onReorder={reorderBooks}
         />
       ) : (
-        <BookGrid books={filteredBooks} onBookClick={onSelectBook} />
+        <BookGrid
+          books={filteredBooks}
+          onBookClick={onSelectBook}
+          showProgress={tab === 'aktuell'}
+          sortable={tab === 'aktuell'}
+          onReorder={reorderBooks}
+        />
       )}
 
       <button className="fab-add" onClick={onAddRequest}>
@@ -119,7 +126,7 @@ export default function TabContent({
   )
 }
 
-function GelesenView({ books, onBookClick, showRatings, filterActive }) {
+function GelesenView({ books, onBookClick, showRatings, filterActive, onReorder }) {
   const grouped = groupBooksByYear(books)
   const years = Object.keys(grouped).sort((a, b) => b - a)
 
@@ -147,6 +154,8 @@ function GelesenView({ books, onBookClick, showRatings, filterActive }) {
                   books={grouped[year][month]}
                   onBookClick={onBookClick}
                   showRatings={showRatings}
+                  sortable={!filterActive}
+                  onReorder={onReorder}
                 />
               </div>
             ))}

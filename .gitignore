@@ -28,3 +28,6 @@ public/_debug_*.png
 public/icon-square.png
 Icon.png
 Smileys/
+
+# Temporäre Vite-Dateien (entstehen bei abgebrochenem Dev-Server)
+vite.config.js.timestamp-*.mjs

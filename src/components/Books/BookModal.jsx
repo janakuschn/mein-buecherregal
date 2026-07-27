@@ -31,6 +31,7 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
   const [rating, setRating] = useState(book?.rating || 0)
   const [notes, setNotes] = useState(book?.notes || '')
   const [status, setStatus] = useState(book?.status || 'ungelesen')
+  const [progress, setProgress] = useState(book?.progress || 0)
   const [completedMonth, setCompletedMonth] = useState(
     book?.completed_month || new Date().getMonth() + 1
   )
@@ -76,6 +77,7 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
       rating: rating || null,
       notes: notes.trim() || null,
       status,
+      progress: Number(progress) || 0,
       completed_month: status === 'gelesen' ? Number(completedMonth) : null,
       completed_year: status === 'gelesen' ? Number(completedYear) : null,
     }
@@ -175,6 +177,22 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
             </button>
           ))}
         </div>
+
+        {status === 'aktuell' && (
+          <div className="modal-progress">
+            <input
+              type="range"
+              min="0"
+              max="100"
+              step="10"
+              value={progress}
+              onChange={(e) => setProgress(Number(e.target.value))}
+              className="progress-slider"
+              style={{ '--progress-fill': `${progress}%` }}
+              aria-label={`Fortschritt: ${progress}%`}
+            />
+          </div>
+        )}
 
         {status === 'gelesen' && (
           <div className="date-selects">
