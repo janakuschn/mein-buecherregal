@@ -74,41 +74,31 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
     setLentSince('')
   }
 
-  const handleIsbnLookup = async (scannedIsbn) => {
-    const code = scannedIsbn || isbn
-    if (!code) return
-    setShowScanner(false)
-    setLookupLoading(true)
-    setLookupError('')
-    try {
-      const result = await lookupByISBN(code)
-      setIsbn(result.isbn)
-      setTitle(result.title)
-      setAuthor(result.author)
-      setCoverUrl(result.cover_url)
-    } catch (err) {
-      setLookupError(err.message)
-      setIsbn(code)
-    } finally {
-      setLookupLoading(false)
-    }
+  // Erkennt selbst, ob im Suchfeld eine ISBN (nur Ziffern/X, 10 oder 13
+  // Zeichen) oder ein Titel steht, und ruft die passende Suche auf. So
+  // reicht ein einziges Feld für beides.
+  const looksLikeIsbn = (value) => {
+    const cleaned = value.replace(/[^0-9Xx]/g, '')
+    return cleaned.length === 10 || cleaned.length === 13
   }
 
-  // Wird aufgerufen, wenn beim Scannen kein Barcode gefunden wurde und
-  // stattdessen der per Texterkennung gelesene Cover-Text zur Suche
-  // verwendet wird.
-  const handleTextLookup = async (recognizedText) => {
+  const handleSearch = async (scannedIsbn) => {
+    const query = scannedIsbn || isbn
+    if (!query.trim()) return
     setShowScanner(false)
     setLookupLoading(true)
     setLookupError('')
     try {
-      const result = await lookupByText(recognizedText)
+      const result = scannedIsbn || looksLikeIsbn(query)
+        ? await lookupByISBN(query)
+        : await lookupByText(query)
       setIsbn(result.isbn)
       setTitle(result.title)
       setAuthor(result.author)
       setCoverUrl(result.cover_url)
     } catch (err) {
       setLookupError(err.message)
+      if (scannedIsbn) setIsbn(scannedIsbn)
     } finally {
       setLookupLoading(false)
     }
@@ -167,11 +157,7 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
         </button>
 
         {showScanner && (
-          <BarcodeScanner
-            onDetected={handleIsbnLookup}
-            onTextDetected={handleTextLookup}
-            onClose={() => setShowScanner(false)}
-          />
+          <BarcodeScanner onDetected={handleSearch} onClose={() => setShowScanner(false)} />
         )}
 
         <div className="modal-top-panel">
@@ -193,18 +179,14 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
             <div className="isbn-lookup-row">
               <input
                 type="text"
-                placeholder="ISBN eingeben"
+                placeholder="ISBN oder Titel eingeben"
                 value={isbn}
                 onChange={(e) => setIsbn(e.target.value)}
               />
-              <button className="btn-secondary" onClick={() => handleIsbnLookup()} disabled={lookupLoading}>
+              <button className="btn-secondary" onClick={() => handleSearch()} disabled={lookupLoading}>
                 {lookupLoading ? 'Suche...' : 'Suchen'}
               </button>
-              <button
-                className="btn-secondary"
-                onClick={() => setShowScanner(true)}
-                title="Erkennt automatisch Barcode oder Cover-Text"
-              >
+              <button className="btn-secondary" onClick={() => setShowScanner(true)} title="Barcode scannen">
                 📷 Scannen
               </button>
             </div>
