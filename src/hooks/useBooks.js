@@ -56,7 +56,20 @@ export function useBooks() {
   }
 
   const editBook = async (id, updates) => {
-    const updated = await updateBook(id, updates)
+    // Ändert sich der Status (z.B. Ungelesen -> Aktuell), wird das Buch
+    // automatisch vorne in die neue Gruppe einsortiert - sonst würde die
+    // alte sort_order beibehalten und das Buch könnte zufällig irgendwo
+    // in der neuen Liste auftauchen statt sichtbar ganz oben.
+    const current = books.find((b) => b.id === id)
+    let finalUpdates = updates
+    if (current && updates.status && updates.status !== current.status) {
+      const sameStatus = books.filter((b) => b.status === updates.status && b.id !== id)
+      const minOrder =
+        sameStatus.length > 0 ? Math.min(...sameStatus.map((b) => b.sort_order ?? 0)) : 1
+      finalUpdates = { ...updates, sort_order: minOrder - 1 }
+    }
+
+    const updated = await updateBook(id, finalUpdates)
     setBooks((prev) => prev.map((b) => (b.id === id ? updated : b)))
     return updated
   }

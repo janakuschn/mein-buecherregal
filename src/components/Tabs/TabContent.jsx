@@ -95,7 +95,7 @@ export default function TabContent({
         />
       )}
 
-      <button className="fab-add" onClick={onAddRequest}>
+      <button className="fab-add" onClick={onAddRequest} aria-label="Buch hinzufügen">
         +
       </button>
 

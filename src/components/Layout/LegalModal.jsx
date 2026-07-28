@@ -54,7 +54,7 @@ export default function LegalModal({ page, onClose }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content legal-modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}>
+        <button className="modal-close" onClick={onClose} aria-label="Schließen">
           ✕
         </button>
         <h2>{content.title}</h2>

@@ -152,7 +152,7 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}>
+        <button className="modal-close" onClick={onClose} aria-label="Schließen">
           ✕
         </button>
 
