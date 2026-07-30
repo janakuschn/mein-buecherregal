@@ -7,9 +7,11 @@
 import React, { useState } from 'react'
 import { signOut } from '../../services/authService'
 import LegalModal from './LegalModal'
+import ChangePasswordModal from '../Auth/ChangePasswordModal'
 
 export default function Footer() {
   const [legalPage, setLegalPage] = useState(null) // null | 'kontakt' | 'datenschutz'
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
 
   const handleLogout = async () => {
     await signOut()
@@ -22,6 +24,10 @@ export default function Footer() {
           Abmelden
         </button>
         <div className="app-footer-legal">
+          <button className="link-button-muted" onClick={() => setShowPasswordModal(true)}>
+            Passwort ändern
+          </button>
+          <span aria-hidden="true"> · </span>
           <button className="link-button-muted" onClick={() => setLegalPage('kontakt')}>
             Kontakt
           </button>
@@ -33,6 +39,7 @@ export default function Footer() {
       </div>
 
       {legalPage && <LegalModal page={legalPage} onClose={() => setLegalPage(null)} />}
+      {showPasswordModal && <ChangePasswordModal onClose={() => setShowPasswordModal(false)} />}
     </footer>
   )
 }
