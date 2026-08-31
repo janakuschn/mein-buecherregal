@@ -23,7 +23,6 @@ function AppContent() {
   const [activeTab, setActiveTab] = useState('aktuell')
   const [showRegister, setShowRegister] = useState(false)
   const [selectedBook, setSelectedBook] = useState(null) // null | 'new' | book object
-  const [showRatings, setShowRatings] = useState(true)
 
   if (loading) return <LoadingSpinner />
 
@@ -59,15 +58,11 @@ function AppContent() {
 
   return (
     <div className="app-layout">
-      <Header
-        activeTab={activeTab}
-        showRatings={showRatings}
-        onToggleRatings={() => setShowRatings((v) => !v)}
-      />
+      <Header />
       <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
       <TabContent
         tab={activeTab}
-        showRatings={showRatings}
+        showRatings
         selectedBook={selectedBook}
         onSelectBook={setSelectedBook}
         onAddRequest={() => setSelectedBook('new')}

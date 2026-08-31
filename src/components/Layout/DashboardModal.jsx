@@ -47,10 +47,12 @@ export default function DashboardModal({ onClose }) {
       } catch {
         setBackfillState((s) => ({ ...s, done: s.done + 1, failed: s.failed + 1 }))
       }
-      // Kleine Pause zwischen den Anfragen, um die Buch-Suchdienste
-      // (Google Books/DNB/Open Library) nicht mit ~60 Anfragen in kurzer
-      // Zeit zu überlasten.
-      await new Promise((r) => setTimeout(r, 700))
+      // Deutlich größere Pause zwischen den Anfragen als zuerst versucht
+      // (700ms): Google Books hat ohne API-Key ein recht niedriges
+      // Rate-Limit - beim ersten Testlauf wurden nach den ersten paar
+      // Büchern fast alle weiteren als "ohne Treffer" abgewiesen, weil
+      // Google Books zu schnell hintereinander angefragt wurde.
+      await new Promise((r) => setTimeout(r, 1500))
     }
   }
 

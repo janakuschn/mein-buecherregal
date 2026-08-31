@@ -385,9 +385,15 @@ h2 {
   width: 100%;
   padding: 0.75rem 2.5rem 0.75rem 1rem;
   border-radius: 999px;
-  border: 1px solid var(--color-border);
-  background: var(--color-card-bg);
+  border: 1px solid var(--color-header-bg);
+  background: var(--color-header-bg);
+  color: var(--color-header-text);
   font-size: 16px; /* verhindert iOS-Zoom beim Fokussieren, siehe .isbn-lookup-row input */
+}
+
+.search-input::placeholder {
+  color: var(--color-header-text);
+  opacity: 0.6;
 }
 
 .search-clear-btn {
@@ -400,7 +406,7 @@ h2 {
   border-radius: 50%;
   border: none;
   background: none;
-  color: var(--color-text-muted);
+  color: var(--color-header-text);
   font-size: 0.9rem;
   cursor: pointer;
 }
@@ -901,9 +907,11 @@ h2 {
   position: absolute;
   top: 0.75rem;
   right: 0.75rem;
-  /* 44px Mindest-Tippfläche (Apple HIG) statt der vorherigen 35px */
-  width: 44px;
-  height: 44px;
+  /* Zurück auf 35px (2.2rem) - die 44px-Tippfläche (Apple HIG) wirkte im
+     Design zu wuchtig, besonders seit der Header nur noch Cover+Bewertung
+     zeigt. */
+  width: 2.2rem;
+  height: 2.2rem;
   border-radius: 999px;
   border: none;
   background: var(--color-primary);
