@@ -273,13 +273,6 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
           <StarRating rating={rating} onChange={setRating} />
         </div>
 
-        <textarea
-          className="modal-notes"
-          placeholder="Notes & Thoughts..."
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-        />
-
         <div className="status-tags">
           {STATUS_OPTIONS.map((opt) => (
             <button
@@ -332,6 +325,13 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
             </div>
           </div>
         )}
+
+        <textarea
+          className="modal-notes"
+          placeholder="Notes & Thoughts..."
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+        />
 
         {/* Hörbuch und Verleihen nebeneinander, solange Verleihen nur ein
             Button ist. Sobald verliehen wird bzw. das Formular offen ist,
