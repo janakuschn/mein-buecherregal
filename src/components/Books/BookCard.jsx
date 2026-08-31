@@ -52,21 +52,19 @@ export default function BookCard({ book, onClick, showRatings, showProgress, dra
           </div>
         )}
         {dragHandleProps && (
-          // Nur dieser Ziehpunkt startet das Verschieben (dnd-kit
-          // attributes/listeners landen ausschließlich hier). Ein "span"
-          // statt "button", damit kein interaktives Element in einem <a>
-          // verschachtelt wird (bei Büchern mit Thalia-Link). stopPropagation
-          // verhindert, dass ein kurzes Antippen des Punkts zusätzlich die
-          // Detailansicht öffnet.
+          // Nur dieser Bereich (unsichtbar, unten rechts auf dem Cover)
+          // startet das Verschieben (dnd-kit attributes/listeners landen
+          // ausschließlich hier). Ein "span" statt "button", damit kein
+          // interaktives Element in einem <a> verschachtelt wird (bei
+          // Büchern mit Thalia-Link). stopPropagation verhindert, dass ein
+          // kurzes Antippen zusätzlich die Detailansicht öffnet.
           <span
             className="book-drag-handle"
             role="button"
             aria-label="Ziehen zum Sortieren"
             onClick={(e) => e.stopPropagation()}
             {...dragHandleProps}
-          >
-            ⠿
-          </span>
+          />
         )}
       </div>
       {showProgress && book.progress > 0 && (
