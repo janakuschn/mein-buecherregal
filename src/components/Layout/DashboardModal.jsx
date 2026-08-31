@@ -12,7 +12,7 @@
 // schon Seitenzahl UND Klappentext haben - kann also gefahrlos mehrfach
 // angestoßen werden, z.B. für Bücher, die beim letzten Mal fehlgeschlagen
 // sind.
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { useBooks } from '../../hooks/useBooks'
 import { lookupByISBN } from '../../services/openlibrary'
 import { isRealIsbn } from '../../utils/thalia'
@@ -21,39 +21,71 @@ import LoadingSpinner from '../Common/LoadingSpinner'
 
 const currentYear = new Date().getFullYear()
 
+// Absichtlich AUSSERHALB der Komponente (Modul-Zustand, kein React State):
+// Schließt man das Dashboard während des Nachladens und öffnet es neu,
+// wird die Komponente neu gemountet - ein normaler useState wäre dann
+// wieder leer und "Jetzt nachladen" hätte erneut geklickt werden können,
+// während im Hintergrund noch ein Lauf lief. Das führte dazu, dass es aussah,
+// als würde der Vorgang "immer wieder von vorne starten" (tatsächlich liefen
+// dann zwei Läufe gleichzeitig und haben sich gegenseitig das ohnehin knappe
+// Google-Books-Rate-Limit weggenommen). Dieses Objekt lebt so lange wie der
+// Tab offen ist, unabhängig davon, ob das Dashboard gerade angezeigt wird.
+let globalBackfill = { status: 'idle', done: 0, total: 0, updated: 0, skipped: 0, failed: 0 }
+
+async function runBackfillOnce(candidates, editBook) {
+  if (globalBackfill.status === 'running') return // läuft schon, keinen zweiten Lauf starten
+  globalBackfill = { status: 'running', done: 0, total: candidates.length, updated: 0, skipped: 0, failed: 0 }
+  for (const book of candidates) {
+    try {
+      const result = await lookupByISBN(book.isbn)
+      if (result.pageCount || result.description) {
+        await editBook(book.id, {
+          page_count: result.pageCount || book.page_count || null,
+          description: result.description || book.description || null,
+        })
+        globalBackfill = { ...globalBackfill, done: globalBackfill.done + 1, updated: globalBackfill.updated + 1 }
+      } else {
+        globalBackfill = { ...globalBackfill, done: globalBackfill.done + 1, skipped: globalBackfill.skipped + 1 }
+      }
+    } catch {
+      globalBackfill = { ...globalBackfill, done: globalBackfill.done + 1, failed: globalBackfill.failed + 1 }
+    }
+    // Deutlich größere Pause zwischen den Anfragen als zuerst versucht
+    // (700ms): Google Books hat ohne API-Key ein recht niedriges
+    // Rate-Limit - beim ersten Testlauf wurden nach den ersten paar
+    // Büchern fast alle weiteren als "ohne Treffer" abgewiesen, weil
+    // Google Books zu schnell hintereinander angefragt wurde.
+    await new Promise((r) => setTimeout(r, 1500))
+  }
+  globalBackfill = { ...globalBackfill, status: 'done' }
+}
+
 export default function DashboardModal({ onClose }) {
   const { books, loading, editBook } = useBooks()
-  const [backfillState, setBackfillState] = useState(null) // null | { done, total, updated, skipped, failed }
+  const [backfillState, setBackfillState] = useState(globalBackfill)
+
+  // Synchronisiert die Anzeige mit dem modulweiten Zustand - läuft ein
+  // Nachladen bereits im Hintergrund (aus einem vorherigen Öffnen), zeigt
+  // sich das hier sofort als laufender Fortschritt statt eines leeren
+  // "Jetzt nachladen"-Buttons.
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBackfillState((prev) =>
+        prev.done === globalBackfill.done && prev.status === globalBackfill.status
+          ? prev
+          : { ...globalBackfill }
+      )
+    }, 500)
+    return () => clearInterval(interval)
+  }, [])
 
   const candidates = useMemo(
     () => books.filter((b) => isRealIsbn(b.isbn) && (!b.page_count || !b.description)),
     [books]
   )
 
-  const runBackfill = async () => {
-    setBackfillState({ done: 0, total: candidates.length, updated: 0, skipped: 0, failed: 0 })
-    for (const book of candidates) {
-      try {
-        const result = await lookupByISBN(book.isbn)
-        if (result.pageCount || result.description) {
-          await editBook(book.id, {
-            page_count: result.pageCount || book.page_count || null,
-            description: result.description || book.description || null,
-          })
-          setBackfillState((s) => ({ ...s, done: s.done + 1, updated: s.updated + 1 }))
-        } else {
-          setBackfillState((s) => ({ ...s, done: s.done + 1, skipped: s.skipped + 1 }))
-        }
-      } catch {
-        setBackfillState((s) => ({ ...s, done: s.done + 1, failed: s.failed + 1 }))
-      }
-      // Deutlich größere Pause zwischen den Anfragen als zuerst versucht
-      // (700ms): Google Books hat ohne API-Key ein recht niedriges
-      // Rate-Limit - beim ersten Testlauf wurden nach den ersten paar
-      // Büchern fast alle weiteren als "ohne Treffer" abgewiesen, weil
-      // Google Books zu schnell hintereinander angefragt wurde.
-      await new Promise((r) => setTimeout(r, 1500))
-    }
+  const runBackfill = () => {
+    runBackfillOnce(candidates, editBook)
   }
 
   if (loading) {
@@ -155,17 +187,16 @@ export default function DashboardModal({ onClose }) {
 
           <div className="dashboard-section">
             <p className="dashboard-section-title">Buchdaten nachladen</p>
-            {backfillState ? (
-              backfillState.done < backfillState.total ? (
-                <p className="dashboard-backfill-status">
-                  {backfillState.done} / {backfillState.total} verarbeitet...
-                </p>
-              ) : (
-                <p className="dashboard-backfill-status">
-                  Fertig: {backfillState.updated} aktualisiert, {backfillState.skipped} ohne Treffer,{' '}
-                  {backfillState.failed} fehlgeschlagen.
-                </p>
-              )
+            {backfillState.status === 'running' ? (
+              <p className="dashboard-backfill-status">
+                {backfillState.done} / {backfillState.total} verarbeitet... (läuft auch im
+                Hintergrund weiter, wenn du das Fenster schließt)
+              </p>
+            ) : backfillState.status === 'done' ? (
+              <p className="dashboard-backfill-status">
+                Fertig: {backfillState.updated} aktualisiert, {backfillState.skipped} ohne Treffer,{' '}
+                {backfillState.failed} fehlgeschlagen.
+              </p>
             ) : (
               <>
                 <p className="dashboard-backfill-hint">
