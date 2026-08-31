@@ -16,6 +16,7 @@ export default function TabContent({
   onCloseModal,
 }) {
   const { books, loading, error, createBook, editBook, removeBook, reorderBooks } = useBooks()
+  const [searchQuery, setSearchQuery] = useState('')
   const [ungelesenFilter, setUngelesenFilter] = useState('alle') // 'alle' | 'wunsch'
   const [ratingFilter, setRatingFilter] = useState([]) // leeres Array = Alle, sonst Mehrfachauswahl aus 1-5
   const [audiobookFilter, setAudiobookFilter] = useState(null) // null = alle, false = ohne Hörbücher
@@ -27,8 +28,10 @@ export default function TabContent({
   }
 
   const filteredBooks = useMemo(() => {
-    if (tab === 'aktuell') return books.filter((b) => b.status === 'aktuell')
-    if (tab === 'gelesen') {
+    let result
+    if (tab === 'aktuell') {
+      result = books.filter((b) => b.status === 'aktuell')
+    } else if (tab === 'gelesen') {
       let gelesen = books.filter((b) => b.status === 'gelesen')
       if (ratingFilter.length > 0) {
         gelesen = gelesen.filter((b) => ratingFilter.includes(b.rating))
@@ -36,22 +39,50 @@ export default function TabContent({
       if (audiobookFilter === false) {
         gelesen = gelesen.filter((b) => !b.is_audiobook)
       }
-      return gelesen
+      result = gelesen
+    } else if (tab === 'ungelesen') {
+      result =
+        ungelesenFilter === 'wunsch'
+          ? books.filter((b) => b.status === 'wunsch')
+          : books.filter((b) => b.status === 'ungelesen' || b.status === 'wunsch')
+    } else {
+      result = []
     }
-    if (tab === 'ungelesen') {
-      if (ungelesenFilter === 'wunsch') {
-        return books.filter((b) => b.status === 'wunsch')
-      }
-      return books.filter((b) => b.status === 'ungelesen' || b.status === 'wunsch')
+
+    const query = searchQuery.trim().toLowerCase()
+    if (query) {
+      result = result.filter(
+        (b) =>
+          b.title?.toLowerCase().includes(query) || b.author?.toLowerCase().includes(query)
+      )
     }
-    return []
-  }, [books, tab, ungelesenFilter, ratingFilter, audiobookFilter])
+    return result
+  }, [books, tab, ungelesenFilter, ratingFilter, audiobookFilter, searchQuery])
 
   if (loading) return <LoadingSpinner />
   if (error) return <p className="error-state">Fehler beim Laden: {error}</p>
 
   return (
     <div className="tab-content">
+      <div className="search-row">
+        <input
+          type="text"
+          className="search-input"
+          placeholder="Titel oder Autor suchen..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+        {searchQuery && (
+          <button
+            className="search-clear-btn"
+            onClick={() => setSearchQuery('')}
+            aria-label="Suche zurücksetzen"
+          >
+            ✕
+          </button>
+        )}
+      </div>
+
       {tab === 'ungelesen' && (
         <div className="sub-filter ungelesen-filter">
           <button
@@ -118,7 +149,7 @@ export default function TabContent({
           books={filteredBooks}
           onBookClick={onSelectBook}
           showRatings={showRatings}
-          filterActive={ratingFilter.length > 0}
+          filterActive={ratingFilter.length > 0 || searchQuery.trim().length > 0}
           showYearGrouping={showYearGrouping}
           showMonthlyBreakdown={showMonthlyBreakdown}
         />

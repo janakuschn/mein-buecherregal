@@ -231,10 +231,6 @@ h2 {
   filter: none;
 }
 
-.rating-toggle-disabled {
-  cursor: default;
-}
-
 /* ---------- Footer ---------- */
 .app-footer {
   margin-top: auto;
@@ -377,6 +373,40 @@ h2 {
   gap: 0.5rem;
   margin-bottom: 1rem;
   flex-wrap: wrap;
+}
+
+.search-row {
+  position: relative;
+  width: 100%;
+  margin: 1rem 0;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem 2.5rem 0.75rem 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-card-bg);
+  font-size: 16px; /* verhindert iOS-Zoom beim Fokussieren, siehe .isbn-lookup-row input */
+}
+
+.search-clear-btn {
+  position: absolute;
+  right: 0.35rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.search-clear-btn:active {
+  opacity: 0.6;
 }
 
 .sub-filter-btn {
@@ -1096,6 +1126,30 @@ h2 {
   flex: 1;
 }
 
+/* Seitenzahl/Klappentext - rein informativ, siehe BookModal.jsx. Auf 5
+   Zeilen begrenzt, damit ein langer Klappentext das Modal nicht sprengt. */
+.book-info-section {
+  width: 100%;
+  text-align: left;
+}
+
+.book-info-pages {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin: 0 0 0.35rem;
+}
+
+.book-info-description {
+  font-size: 0.85rem;
+  color: var(--color-text);
+  line-height: 1.45;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .modal-title-input {
   font-size: 1.3rem;
   font-weight: 700;
@@ -1283,6 +1337,118 @@ h2 {
 
 .btn-danger:active {
   transform: scale(0.97);
+}
+
+/* ---------- Dashboard (Statistiken) ---------- */
+.dashboard-shell {
+  max-width: 380px;
+}
+
+.dashboard-stats-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+.dashboard-stat-card {
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 0.9rem;
+}
+
+.dashboard-stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.dashboard-stat-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.dashboard-section {
+  width: 100%;
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+}
+
+.dashboard-section-title {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin: 0 0 0.5rem;
+}
+
+.dashboard-rating-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 44px;
+}
+
+.dashboard-rating-bar-wrapper {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+
+.dashboard-rating-bar {
+  width: 100%;
+  min-height: 3px;
+  background: var(--color-header-bg);
+  border-radius: 4px 4px 0 0;
+}
+
+.dashboard-rating-labels {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.dashboard-rating-icon {
+  flex: 1;
+  width: 100%;
+  max-width: 20px;
+  margin: 0 auto;
+  display: block;
+}
+
+.dashboard-recent-covers {
+  display: flex;
+  gap: 8px;
+}
+
+.dashboard-recent-cover {
+  width: 44px;
+  height: 66px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--color-border);
+  flex-shrink: 0;
+}
+
+.dashboard-recent-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dashboard-backfill-hint {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin: 0 0 0.6rem;
+}
+
+.dashboard-backfill-status {
+  font-size: 0.85rem;
+  color: var(--color-text);
+  margin: 0;
 }
 
 /* ---------- Scanner ---------- */

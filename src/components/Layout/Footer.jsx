@@ -8,10 +8,15 @@ import React, { useState } from 'react'
 import { signOut } from '../../services/authService'
 import LegalModal from './LegalModal'
 import ChangePasswordModal from '../Auth/ChangePasswordModal'
+import DashboardModal from './DashboardModal'
 
 export default function Footer() {
   const [legalPage, setLegalPage] = useState(null) // null | 'kontakt' | 'datenschutz'
   const [showPasswordModal, setShowPasswordModal] = useState(false)
+  // Zweiter Zugang zum Dashboard neben dem Herz im Header (siehe
+  // Header.jsx) - von überall erreichbar, auch vom Tab Gelesen, wo das
+  // Herz weiterhin die Bewertungen umschaltet.
+  const [showDashboard, setShowDashboard] = useState(false)
 
   const handleLogout = async () => {
     await signOut()
@@ -24,6 +29,10 @@ export default function Footer() {
           Abmelden
         </button>
         <div className="app-footer-legal">
+          <button className="link-button-muted" onClick={() => setShowDashboard(true)}>
+            Statistiken
+          </button>
+          <span aria-hidden="true"> · </span>
           <button className="link-button-muted" onClick={() => setShowPasswordModal(true)}>
             Passwort ändern
           </button>
@@ -40,6 +49,7 @@ export default function Footer() {
 
       {legalPage && <LegalModal page={legalPage} onClose={() => setLegalPage(null)} />}
       {showPasswordModal && <ChangePasswordModal onClose={() => setShowPasswordModal(false)} />}
+      {showDashboard && <DashboardModal onClose={() => setShowDashboard(false)} />}
     </footer>
   )
 }

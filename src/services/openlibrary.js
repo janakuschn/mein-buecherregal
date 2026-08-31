@@ -40,6 +40,8 @@ async function callHyperProcessor(body) {
     title: data.title,
     author: data.author,
     cover_url: data.cover_url,
+    pageCount: data.pageCount || null,
+    description: data.description || '',
   }
 }
 

@@ -57,6 +57,12 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
 
+  // Seitenzahl/Klappentext: kommen automatisch mit der ISBN-Suche mit
+  // (siehe openlibrary.js/hyper-processor), rein informativ, keine
+  // eigenen Eingabefelder.
+  const [pageCount, setPageCount] = useState(book?.page_count || null)
+  const [description, setDescription] = useState(book?.description || '')
+
   // Verleihen: solange nicht "Zurückbekommen" gedrückt wird, bleibt das
   // Buch als verliehen markiert (transparent + Schlaf-Herz-Badge).
   const [lentTo, setLentTo] = useState(book?.lent_to || '')
@@ -109,6 +115,8 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
       setTitle(result.title)
       setAuthor(result.author)
       setCoverUrl(result.cover_url)
+      setPageCount(result.pageCount || null)
+      setDescription(result.description || '')
     } catch (err) {
       setLookupError(err.message)
       if (scannedIsbn) setIsbn(scannedIsbn)
@@ -138,6 +146,8 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
       lent_to: lentTo.trim() || null,
       lent_since: lentTo.trim() ? lentSince || todayIsoDate() : null,
       is_audiobook: isAudiobook,
+      page_count: pageCount || null,
+      description: description.trim() || null,
     }
     try {
       await onSave(data)
@@ -239,6 +249,15 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
 
           <StarRating rating={rating} onChange={setRating} />
         </div>
+
+        {/* Seitenzahl/Klappentext - nur wenn vorhanden (ältere Bücher haben
+            das ggf. noch nicht, siehe Dashboard "Buchdaten nachladen"). */}
+        {(pageCount || description) && (
+          <div className="book-info-section">
+            {pageCount && <p className="book-info-pages">{pageCount} Seiten</p>}
+            {description && <p className="book-info-description">{description}</p>}
+          </div>
+        )}
 
         {/* Titel/Autor/ISBN-Suche liegen bewusst außerhalb des Headers oben
             (der zeigt nur noch Cover + Bewertung), aber weiterhin ganz oben
