@@ -2,6 +2,8 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { execSync } from 'node:child_process'
+import { writeFileSync } from 'node:fs'
+import { join } from 'node:path'
 
 // Ermittelt den kurzen Git-Commit-Hash zum Zeitpunkt des Builds. Läuft im
 // GitHub-Actions-Build genauso wie lokal - dadurch lässt sich in der App
@@ -14,8 +16,27 @@ function getCommitHash() {
   }
 }
 
+// Schreibt nach jedem Build eine kleine version.json ins dist/-Verzeichnis
+// (z.B. { "version": "a66c64b" }). Die App fragt diese Datei regelmäßig ab
+// (siehe UpdateChecker.jsx) und vergleicht sie mit der gerade laufenden
+// Version - so lässt sich erkennen, ob ein neuerer Stand live ist, auch
+// wenn die als Homescreen-App installierte PWA die alten Dateien noch
+// zwischengespeichert hat.
+function writeVersionFile() {
+  const version = getCommitHash()
+  return {
+    name: 'write-version-file',
+    writeBundle(options) {
+      writeFileSync(
+        join(options.dir || 'dist', 'version.json'),
+        JSON.stringify({ version })
+      )
+    },
+  }
+}
+
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), writeVersionFile()],
   base: '/mein-buecherregal/', // GitHub Pages base path
   server: {
     port: 5173,
