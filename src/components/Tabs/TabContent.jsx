@@ -19,11 +19,12 @@ export default function TabContent({
   const [ungelesenFilter, setUngelesenFilter] = useState('alle') // 'alle' | 'wunsch'
   const [ratingFilter, setRatingFilter] = useState([]) // leeres Array = Alle, sonst Mehrfachauswahl aus 1-5
   const [audiobookFilter, setAudiobookFilter] = useState(null) // null = alle, false = ohne Hörbücher
+  const [showYearGrouping, setShowYearGrouping] = useState(true) // true (Default) = nach Jahr gruppiert, false = eine flache Liste ohne Gruppierung
+  const [showMonthlyBreakdown, setShowMonthlyBreakdown] = useState(false) // false = Jahresansicht, true = zusätzlich nach Monat
 
   const toggleRating = (r) => {
     setRatingFilter((prev) => (prev.includes(r) ? prev.filter((v) => v !== r) : [...prev, r]))
   }
-  const [showMonthlyBreakdown, setShowMonthlyBreakdown] = useState(false) // false = Jahresansicht, true = Monatsansicht
 
   const filteredBooks = useMemo(() => {
     if (tab === 'aktuell') return books.filter((b) => b.status === 'aktuell')
@@ -97,10 +98,16 @@ export default function TabContent({
               Hörbücher
             </button>
             <button
+              className={`toggle-filter-btn ${showYearGrouping ? 'active' : ''}`}
+              onClick={() => setShowYearGrouping(!showYearGrouping)}
+            >
+              Jahr
+            </button>
+            <button
               className={`toggle-filter-btn ${showMonthlyBreakdown ? 'active' : ''}`}
               onClick={() => setShowMonthlyBreakdown(!showMonthlyBreakdown)}
             >
-              Monatsansicht
+              Monat
             </button>
           </div>
         </>
@@ -112,6 +119,7 @@ export default function TabContent({
           onBookClick={onSelectBook}
           showRatings={showRatings}
           filterActive={ratingFilter.length > 0}
+          showYearGrouping={showYearGrouping}
           showMonthlyBreakdown={showMonthlyBreakdown}
         />
       ) : (
@@ -154,11 +162,8 @@ export default function TabContent({
   )
 }
 
-function GelesenView({ books, onBookClick, showRatings, filterActive, showMonthlyBreakdown }) {
-  const grouped = groupBooksByYear(books)
-  const years = Object.keys(grouped).sort((a, b) => b - a)
-
-  if (years.length === 0) {
+function GelesenView({ books, onBookClick, showRatings, filterActive, showYearGrouping, showMonthlyBreakdown }) {
+  if (books.length === 0) {
     return (
       <p className="empty-state">
         {filterActive
@@ -167,6 +172,26 @@ function GelesenView({ books, onBookClick, showRatings, filterActive, showMonthl
       </p>
     )
   }
+
+  // "Jahr"-Filter aus: eine flache Liste ohne Gruppierung, neuestes
+  // Beendet-Datum zuerst (links oben), ältestes zuletzt (rechts unten).
+  // Bücher ohne Beendet-Datum landen ganz am Ende statt zu verschwinden.
+  if (!showYearGrouping) {
+    const sorted = [...books].sort((a, b) => {
+      const aYear = a.completed_year ?? -Infinity
+      const bYear = b.completed_year ?? -Infinity
+      if (aYear !== bYear) return bYear - aYear
+      const aMonth = a.completed_month ?? -Infinity
+      const bMonth = b.completed_month ?? -Infinity
+      return bMonth - aMonth
+    })
+    return (
+      <BookGrid books={sorted} onBookClick={onBookClick} showRatings={showRatings} sortable={false} />
+    )
+  }
+
+  const grouped = groupBooksByYear(books)
+  const years = Object.keys(grouped).sort((a, b) => b - a)
 
   // Jahresansicht (default): Bücher pro Jahr in einem Grid, nach Monat absteigend sortiert
   if (!showMonthlyBreakdown) {
