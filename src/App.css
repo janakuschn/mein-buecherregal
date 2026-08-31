@@ -445,6 +445,11 @@ h2 {
   align-items: center;
   gap: 0.4rem;
   transition: transform 0.15s ease;
+  /* Zurücksetzen, falls .book-card ein <a> ist (siehe BookCard.jsx) - sonst
+     würde der Titel im Cover-Platzhalter unterstrichen/blau erscheinen. */
+  text-decoration: none;
+  color: inherit;
+  -webkit-touch-callout: default;
 }
 
 .book-card:hover {
