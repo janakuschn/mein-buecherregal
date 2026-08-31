@@ -238,19 +238,21 @@ h2 {
 
 .update-banner {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  bottom: 5.5rem;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 100;
-  background: var(--color-header-bg);
-  color: var(--color-header-text);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
   border: none;
-  padding: 0.85rem 1rem;
-  font-size: 0.9rem;
-  font-weight: 600;
+  border-radius: 999px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.85rem;
+  font-weight: 700;
   cursor: pointer;
   text-align: center;
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.15);
+  white-space: nowrap;
+  box-shadow: 0 2px 5px rgba(247, 201, 220, 0.6);
 }
 
 .btn-logout {

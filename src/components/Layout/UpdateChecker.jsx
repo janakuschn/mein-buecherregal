@@ -61,7 +61,7 @@ export default function UpdateChecker() {
 
   return (
     <button className="update-banner" onClick={handleReload}>
-      🔄 Neue Version verfügbar – Jetzt aktualisieren
+      Neue Version verfügbar – Jetzt aktualisieren
     </button>
   )
 }
