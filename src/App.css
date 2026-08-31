@@ -36,6 +36,16 @@
   box-sizing: border-box;
 }
 
+/* UX-Feinschliff: sichtbare Tap-Rückmeldung statt gar keiner (siehe
+   :active-Regeln weiter unten) - der graue/blaue Standard-Tap-Flash von
+   iOS Safari wird dafür deaktiviert. */
+button,
+a,
+.book-card,
+[role='button'] {
+  -webkit-tap-highlight-color: transparent;
+}
+
 html {
   -webkit-text-size-adjust: 100%;
 }
@@ -135,12 +145,12 @@ h2 {
 
 .auth-error {
   color: var(--color-danger);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 
 .auth-switch {
   margin-top: 1rem;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--color-text-muted);
   text-align: center;
 }
@@ -152,6 +162,11 @@ h2 {
   cursor: pointer;
   font-weight: 600;
   padding: 0;
+}
+
+.link-button:active,
+.link-button-muted:active {
+  opacity: 0.6;
 }
 
 /* ---------- Header ---------- */
@@ -180,6 +195,17 @@ h2 {
   font-size: 1.5rem;
   cursor: pointer;
   color: var(--color-text);
+  /* Mindestens 44x44px Tippfläche (Apple HIG), auch wenn das Icon selbst
+     kleiner ist - die Klickfläche wächst, nicht das Icon. */
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-button:active {
+  opacity: 0.6;
 }
 
 /* Herz-Toggle: nur auf dem Tab "Gelesen" sichtbar, schaltet die
@@ -253,20 +279,30 @@ h2 {
   text-align: center;
   white-space: nowrap;
   box-shadow: 0 2px 5px rgba(247, 201, 220, 0.6);
+  transition: transform 0.1s ease;
+}
+
+.update-banner:active {
+  transform: translateX(-50%) scale(0.96);
 }
 
 .btn-logout {
   background: none;
   border: 1px solid var(--color-border);
   border-radius: 999px;
-  padding: 0.5rem 1.5rem;
+  padding: 0.75rem 1.5rem;
   cursor: pointer;
   font-size: 0.85rem;
   color: var(--color-text-muted);
+  transition: transform 0.1s ease;
+}
+
+.btn-logout:active {
+  transform: scale(0.96);
 }
 
 .app-footer-legal {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: var(--color-text-muted);
 }
 
@@ -276,7 +312,7 @@ h2 {
   color: var(--color-text-muted);
   cursor: pointer;
   padding: 0;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   text-decoration: underline;
 }
 
@@ -288,7 +324,7 @@ h2 {
 
 .legal-modal-body p {
   margin-bottom: 0.75rem;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   line-height: 150%;
   color: var(--color-text);
 }
@@ -307,7 +343,9 @@ h2 {
 }
 
 .tab-pill {
-  padding: 0.6rem 1.5rem;
+  /* 0.75rem statt 0.6rem: passt aufs 4/8-Punkt-Raster und erreicht damit
+     die von Apple empfohlene 44px-Mindesthöhe für Tippflächen. */
+  padding: 0.75rem 1.5rem;
   border-radius: 999px;
   border: none;
   background: var(--color-primary);
@@ -315,10 +353,15 @@ h2 {
   font-weight: 700;
   color: var(--color-on-primary);
   box-shadow: 0 2px 5px rgba(247, 201, 220, 0.6);
+  transition: transform 0.1s ease;
+}
+
+.tab-pill:active {
+  transform: scale(0.96);
 }
 
 .tab-pill-active {
-  padding: calc(0.6rem - 1px) calc(1.5rem - 1px);
+  padding: calc(0.75rem - 1px) calc(1.5rem - 1px);
   box-shadow:
     0 0 0 1px var(--color-on-primary),
     0 0 0 3px var(--color-header-bg),
@@ -334,13 +377,20 @@ h2 {
 }
 
 .sub-filter-btn {
-  padding: 0.4rem 1rem;
+  /* 0.75rem statt 0.4rem: passt aufs 4/8-Punkt-Raster und kommt der
+     44px-Tippflächen-Empfehlung deutlich näher. */
+  padding: 0.75rem 1rem;
   border-radius: 999px;
   border: 1px solid var(--color-border);
   background: white;
   cursor: pointer;
   font-size: 0.85rem;
   color: var(--color-text-muted);
+  transition: transform 0.1s ease;
+}
+
+.sub-filter-btn:active {
+  transform: scale(0.95);
 }
 
 .sub-filter-btn.active {
@@ -378,13 +428,18 @@ h2 {
 }
 
 .toggle-filter-btn {
-  padding: 0.4rem 1rem;
+  padding: 0.75rem 1rem;
   border-radius: 999px;
   border: none;
   background: #fce9f1;
   color: var(--color-header-text);
   cursor: pointer;
   font-size: 0.85rem;
+  transition: transform 0.1s ease;
+}
+
+.toggle-filter-btn:active {
+  transform: scale(0.95);
 }
 
 .toggle-filter-btn.active {
@@ -393,8 +448,9 @@ h2 {
 }
 
 .rating-filter-btn {
-  width: 2.3rem;
-  height: 2.3rem;
+  /* 44px Mindest-Tippfläche (Apple HIG) statt der vorherigen 37px */
+  width: 44px;
+  height: 44px;
   padding: 0;
   border-radius: 999px;
   border: 1px solid var(--color-border);
@@ -403,6 +459,10 @@ h2 {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.rating-filter-btn:active {
+  transform: scale(0.92);
 }
 
 .rating-filter-icon {
@@ -443,7 +503,7 @@ h2 {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
   transition: transform 0.15s ease;
   /* Zurücksetzen, falls .book-card ein <a> ist (siehe BookCard.jsx) - sonst
      würde der Titel im Cover-Platzhalter unterstrichen/blau erscheinen. */
@@ -454,6 +514,10 @@ h2 {
 
 .book-card:hover {
   transform: translateY(-3px);
+}
+
+.book-card:active {
+  transform: scale(0.97);
 }
 
 .book-cover-wrapper {
@@ -598,7 +662,7 @@ h2 {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
   padding: 0.5rem;
   background: var(--color-border);
 }
@@ -632,7 +696,7 @@ h2 {
 /* ---------- Stars ---------- */
 .star-rating {
   display: flex;
-  gap: 0.15rem;
+  gap: 0.25rem;
   justify-content: center;
 }
 
@@ -640,6 +704,19 @@ h2 {
   cursor: pointer;
   display: inline-flex;
   line-height: 0;
+}
+
+/* Größere Tippfläche für die EINGEBBAREN Sterne (Bewertung setzen in der
+   Detailansicht) - beim reinen Anzeigen (Übersicht, readOnly) bleibt es
+   bei der kompakten Darstellung, da dort nichts antippbar ist. */
+.star-rating:not(.star-rating-readonly) .star {
+  padding: 0.5rem;
+  margin: -0.5rem;
+  transition: transform 0.1s ease;
+}
+
+.star-rating:not(.star-rating-readonly) .star:active {
+  transform: scale(0.85);
 }
 
 .star-icon {
@@ -709,6 +786,11 @@ h2 {
   align-items: center;
   justify-content: center;
   z-index: 20;
+  transition: transform 0.1s ease;
+}
+
+.fab-add:active {
+  transform: scale(0.92);
 }
 
 /* ---------- Modal ---------- */
@@ -720,6 +802,60 @@ h2 {
   align-items: flex-end;
   justify-content: center;
   z-index: 50;
+}
+
+/* Action-Sheet beim Gedrückthalten eines Buchcovers (Teilen/Thalia), im
+   Stil eines nativen iOS-Action-Sheets: unten angedockt, abgerundet,
+   Optionen als Liste. Höherer z-index als .modal-overlay, damit es auch
+   funktioniert, während gleichzeitig eine Detailansicht offen sein sollte. */
+.share-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 200;
+  padding: 0 0.75rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
+}
+
+.share-sheet {
+  width: 100%;
+  max-width: 480px;
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.share-sheet-title {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  padding: 0.75rem 1rem 0.5rem;
+  margin: 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.share-sheet-btn {
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  padding: 1rem;
+  font-size: 1rem;
+  color: var(--color-header-text);
+  cursor: pointer;
+}
+
+.share-sheet-btn:active {
+  background: var(--color-bg);
+}
+
+.share-sheet-cancel {
+  font-weight: 700;
+  color: var(--color-text);
+  border-bottom: none;
 }
 
 /* .modal-shell: äußere, NICHT scrollende Hülle - hält Größe/Rundung/Schatten
@@ -763,14 +899,25 @@ h2 {
 
 .modal-close {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
+  top: 0.5rem;
+  right: 0.5rem;
   background: none;
   border: none;
   font-size: 1.3rem;
   cursor: pointer;
   color: var(--color-text-muted);
   z-index: 1;
+  /* Mindestens 44x44px Tippfläche (Apple HIG) - top/right entsprechend
+     verkleinert, damit das ✕ selbst optisch an derselben Stelle bleibt. */
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close:active {
+  opacity: 0.6;
 }
 
 /* "Fertig"-Haken in der Detailansicht (BookModal): ersetzt das frühere
@@ -779,10 +926,11 @@ h2 {
    (tab-pill, update-banner). */
 .modal-done-btn {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
-  width: 2.2rem;
-  height: 2.2rem;
+  top: 0.75rem;
+  right: 0.75rem;
+  /* 44px Mindest-Tippfläche (Apple HIG) statt der vorherigen 35px */
+  width: 44px;
+  height: 44px;
   border-radius: 999px;
   border: none;
   background: var(--color-primary);
@@ -795,6 +943,10 @@ h2 {
   justify-content: center;
   box-shadow: 0 2px 5px rgba(247, 201, 220, 0.6);
   z-index: 1;
+}
+
+.modal-done-btn:active {
+  transform: scale(0.92);
 }
 
 .modal-top-panel {
@@ -849,7 +1001,7 @@ h2 {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
   padding: 0.5rem;
   background: var(--color-border);
   color: var(--color-text-muted);
@@ -900,7 +1052,7 @@ h2 {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  padding: 0.6rem 0.9rem;
+  padding: 0.5rem 0.75rem;
   background: var(--color-card-bg);
   border-radius: 12px;
   font-size: 0.85rem;
@@ -963,7 +1115,7 @@ h2 {
 .modal-notes {
   width: 100%;
   border: 1px solid var(--color-border);
-  border-radius: 14px;
+  border-radius: 12px;
   padding: 0.75rem 1rem;
   min-height: 70px;
   font-family: inherit;
@@ -1001,13 +1153,18 @@ h2 {
 }
 
 .status-tag {
-  padding: 0.4rem 1rem;
+  padding: 0.75rem 1rem;
   border-radius: 999px;
   border: 1px solid var(--color-header-bg);
   background: white;
   cursor: pointer;
   font-size: 0.85rem;
   color: var(--color-header-bg);
+  transition: transform 0.1s ease;
+}
+
+.status-tag:active {
+  transform: scale(0.95);
 }
 
 .status-tag-active {
@@ -1031,7 +1188,7 @@ h2 {
 
 .date-selects label {
   display: block;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: var(--color-text-muted);
   margin-bottom: 0.25rem;
 }
@@ -1071,6 +1228,11 @@ h2 {
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 2px 5px rgba(247, 201, 220, 0.6);
+  transition: transform 0.1s ease;
+}
+
+.btn-primary:active {
+  transform: scale(0.97);
 }
 
 .btn-primary:disabled {
@@ -1082,9 +1244,16 @@ h2 {
   background: white;
   border: 1px solid var(--color-border);
   border-radius: 999px;
-  padding: 0.5rem 1rem;
+  /* 0.75rem statt 0.5rem: passt aufs 4/8-Punkt-Raster und kommt der
+     44px-Tippflächen-Empfehlung näher. */
+  padding: 0.75rem 1rem;
   cursor: pointer;
   font-size: 0.85rem;
+  transition: transform 0.1s ease;
+}
+
+.btn-secondary:active {
+  transform: scale(0.96);
 }
 
 .btn-danger {
@@ -1095,6 +1264,11 @@ h2 {
   padding: 0.75rem 1.5rem;
   cursor: pointer;
   font-weight: 600;
+  transition: transform 0.1s ease;
+}
+
+.btn-danger:active {
+  transform: scale(0.97);
 }
 
 /* ---------- Scanner ---------- */
@@ -1169,7 +1343,10 @@ h2 {
   }
 
   .app-header {
-    padding: 1.25rem 4rem 1.25rem;
+    /* 4.5rem statt 4rem: der Bewertungs-Button oben rechts ist jetzt 44px
+       breit (vorher deutlich kleiner) - der Titel braucht etwas mehr
+       Abstand, um auf sehr schmalen Screens nicht knapp zu werden. */
+    padding: 1.25rem 4.5rem 1.25rem;
   }
 
   .tab-content {
