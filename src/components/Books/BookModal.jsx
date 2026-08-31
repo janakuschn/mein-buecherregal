@@ -1,5 +1,5 @@
 // ZIEL-PFAD: src/components/Books/BookModal.jsx
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import StarRating, { RATING_IMAGES } from './StarRating'
 import BarcodeScanner from '../Scanner/BarcodeScanner'
 import { lookupByISBN, lookupByText } from '../../services/openlibrary'
@@ -33,6 +33,15 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
   const [author, setAuthor] = useState(book?.author || '')
   const [isbn, setIsbn] = useState(book?.isbn || '')
   const [coverUrl, setCoverUrl] = useState(book?.cover_url || '')
+  // Manche Cover-URLs sind zwar gesetzt, laden aber nicht (kaputter Link,
+  // fehlgeschlagener Upload im Hintergrund usw.). Ohne diese Prüfung würde
+  // der Browser nur ein kaputtes Bild-Icon zeigen statt auf den
+  // Herz-Platzhalter zurückzufallen. Setzt sich bei jeder neuen coverUrl
+  // (z.B. nach erneuter Suche) automatisch zurück.
+  const [coverLoadError, setCoverLoadError] = useState(false)
+  useEffect(() => {
+    setCoverLoadError(false)
+  }, [coverUrl])
   const [rating, setRating] = useState(book?.rating || 0)
   const [notes, setNotes] = useState(book?.notes || '')
   const [status, setStatus] = useState(book?.status || 'ungelesen')
@@ -184,8 +193,13 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
 
         <div className="modal-top-panel">
           <div className={`modal-cover-wrapper ${isLent ? 'modal-cover-wrapper-lent' : ''}`}>
-            {coverUrl ? (
-              <img src={coverUrl} alt={title} className="modal-cover" />
+            {coverUrl && !coverLoadError ? (
+              <img
+                src={coverUrl}
+                alt={title}
+                className="modal-cover"
+                onError={() => setCoverLoadError(true)}
+              />
             ) : (
               <div className="modal-cover-placeholder">
                 <img src={heartIcon} alt="Kein Cover" className="modal-cover-placeholder-icon" />
