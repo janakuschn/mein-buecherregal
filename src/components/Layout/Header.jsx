@@ -23,8 +23,17 @@ export default function Header({ activeTab, showRatings, onToggleRatings }) {
         onClick={isGelesen ? onToggleRatings : undefined}
         disabled={!isGelesen}
         title={isGelesen ? (showRatings ? 'Bewertungen ausblenden' : 'Bewertungen anzeigen') : undefined}
+        aria-label={
+          isGelesen
+            ? showRatings
+              ? 'Bewertungen ausblenden'
+              : 'Bewertungen anzeigen'
+            : 'Bewertungsfilter, nur im Tab Gelesen verfügbar'
+        }
       >
-        <img src={heartIcon} alt="Bewertungen" className="rating-toggle-icon" />
+        {/* alt="" da das Bild rein dekorativ ist - der Name kommt jetzt
+            vom aria-label oben, statt sich beim Deaktivieren zu verlieren. */}
+        <img src={heartIcon} alt="" className="rating-toggle-icon" />
       </button>
       <h1 className="app-title">Mein Bücherregal</h1>
     </header>

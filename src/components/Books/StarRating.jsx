@@ -19,7 +19,14 @@ export default function StarRating({ rating = 0, onChange, readOnly = false, siz
           className={`star ${star <= rating ? 'star-filled' : 'star-empty'}`}
           onClick={() => !readOnly && onChange && onChange(star)}
         >
-          <img src={RATING_IMAGES[star - 1]} alt={`${star} Sterne`} className="star-icon" />
+          {/* Kein Stern-Icon, sondern 5 eigene Maskottchen (Tropfen, Stern,
+              Stern, Wolke, Herz) - alt-Text beschreibt daher die Bewertung
+              statt fälschlich "Sterne" zu behaupten. */}
+          <img
+            src={RATING_IMAGES[star - 1]}
+            alt={`Bewertung ${star} von 5${star === rating ? ' (ausgewählt)' : ''}`}
+            className="star-icon"
+          />
         </span>
       ))}
     </div>

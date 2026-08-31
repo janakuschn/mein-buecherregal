@@ -267,7 +267,10 @@ h2 {
   bottom: 5.5rem;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 100;
+  /* War 100 (über .modal-overlay mit 50) - dadurch konnte der Banner ein
+     offenes Formular überdecken, z.B. das Notizfeld. Jetzt niedriger als
+     jeder Modal-Layer, damit eine offene Detailansicht immer davorliegt. */
+  z-index: 40;
   background: var(--color-primary);
   color: var(--color-on-primary);
   border: none;
