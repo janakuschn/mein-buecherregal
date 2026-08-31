@@ -56,6 +56,9 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
   const [lendFormDate, setLendFormDate] = useState(todayIsoDate())
   const isLent = !!lentTo
 
+  // Hörbuch: Toggle-State, wird mit handleSave in die DB gespeichert
+  const [isAudiobook, setIsAudiobook] = useState(book?.is_audiobook || false)
+
   const openLendForm = () => {
     setLendFormName('')
     setLendFormDate(todayIsoDate())
@@ -124,6 +127,7 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
       completed_year: status === 'gelesen' ? Number(completedYear) : null,
       lent_to: lentTo.trim() || null,
       lent_since: lentTo.trim() ? lentSince || todayIsoDate() : null,
+      is_audiobook: isAudiobook,
     }
     try {
       await onSave(data)
@@ -149,10 +153,24 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
     }
   }
 
+  // Kein expliziter Speichern-Button mehr: Schließen (X oder Klick auf den
+  // abgedunkelten Hintergrund) speichert automatisch. Ausnahme: ein neu
+  // angelegtes Buch ohne Titel wird verworfen statt mit einem leeren Titel
+  // gespeichert zu werden. onSave() (siehe TabContent.jsx) schließt das
+  // Modal bei Erfolg bereits selbst - bei einem Fehler (z.B. doppelte ISBN)
+  // bleibt es bewusst offen, damit die Fehlermeldung sichtbar bleibt.
+  const closeAndSave = async () => {
+    if (!title.trim()) {
+      onClose()
+      return
+    }
+    await handleSave()
+  }
+
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onClick={closeAndSave}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose} aria-label="Schließen">
+        <button className="modal-close" onClick={closeAndSave} aria-label="Schließen">
           ✕
         </button>
 
@@ -271,6 +289,15 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
           </div>
         )}
 
+        <div className="audiobook-section">
+          <button
+            className={`btn-secondary ${isAudiobook ? 'active' : ''}`}
+            onClick={() => setIsAudiobook(!isAudiobook)}
+          >
+            {isAudiobook ? '🎧 Hörbuch (aktiv)' : '🎧 Hörbuch'}
+          </button>
+        </div>
+
         <div className="lend-section">
           {isLent ? (
             <div className="lend-status">
@@ -318,9 +345,7 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
         {saveError && <p className="auth-error">{saveError}</p>}
 
         <div className="modal-actions">
-          <button className="btn-primary" onClick={handleSave} disabled={saving}>
-            {saving ? 'Speichert...' : 'Speichern'}
-          </button>
+          {saving && <span className="modal-saving-indicator">Speichert...</span>}
           {onDelete && (
             <button className="btn-danger" onClick={handleDeleteClick}>
               Löschen

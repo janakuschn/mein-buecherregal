@@ -345,6 +345,30 @@ h2 {
   border-color: var(--color-header-bg);
 }
 
+.audiobook-filter .sub-filter-btn {
+  background: white;
+  border-color: var(--color-header-bg);
+  color: var(--color-header-bg);
+}
+
+.audiobook-filter .sub-filter-btn.active {
+  background: var(--color-header-bg);
+  color: var(--color-header-text);
+  border-color: var(--color-header-bg);
+}
+
+.monthly-breakdown-filter .sub-filter-btn {
+  background: white;
+  border-color: var(--color-header-bg);
+  color: var(--color-header-bg);
+}
+
+.monthly-breakdown-filter .sub-filter-btn.active {
+  background: var(--color-header-bg);
+  color: var(--color-header-text);
+  border-color: var(--color-header-bg);
+}
+
 .rating-filter-btn {
   width: 2.3rem;
   height: 2.3rem;
@@ -427,6 +451,32 @@ h2 {
   height: auto;
   object-fit: contain;
   pointer-events: none;
+}
+
+.book-audiobook-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: #980201;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}
+
+.book-audiobook-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.book-audiobook-text {
+  white-space: nowrap;
 }
 
 .book-cover {
@@ -746,6 +796,21 @@ h2 {
 }
 
 /* ---------- Verleihen ---------- */
+.audiobook-section {
+  width: 100%;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.audiobook-section .btn-secondary {
+  width: 100%;
+}
+
+.audiobook-section .btn-secondary.active {
+  background: var(--color-header-bg);
+  color: white;
+}
+
 .lend-section {
   width: 100%;
   margin-top: 0.5rem;
@@ -894,9 +959,16 @@ h2 {
 
 .modal-actions {
   display: flex;
+  align-items: center;
   gap: 0.75rem;
   width: 100%;
   margin-top: 0.5rem;
+}
+
+.modal-saving-indicator {
+  font-size: 0.85rem;
+  color: var(--color-header-bg);
+  opacity: 0.8;
 }
 
 .modal-actions .btn-primary {

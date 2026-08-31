@@ -18,13 +18,20 @@ export default function TabContent({
   const { books, loading, error, createBook, editBook, removeBook, reorderBooks } = useBooks()
   const [ungelesenFilter, setUngelesenFilter] = useState('alle') // 'alle' | 'wunsch'
   const [ratingFilter, setRatingFilter] = useState(null) // null | 1-5
+  const [audiobookFilter, setAudiobookFilter] = useState(null) // null = alle, false = ohne Hörbücher
+  const [showMonthlyBreakdown, setShowMonthlyBreakdown] = useState(false) // false = Jahresansicht, true = Monatsansicht
 
   const filteredBooks = useMemo(() => {
     if (tab === 'aktuell') return books.filter((b) => b.status === 'aktuell')
     if (tab === 'gelesen') {
-      const gelesen = books.filter((b) => b.status === 'gelesen')
-      if (ratingFilter === null) return gelesen
-      return gelesen.filter((b) => b.rating === ratingFilter)
+      let gelesen = books.filter((b) => b.status === 'gelesen')
+      if (ratingFilter !== null) {
+        gelesen = gelesen.filter((b) => b.rating === ratingFilter)
+      }
+      if (audiobookFilter === false) {
+        gelesen = gelesen.filter((b) => !b.is_audiobook)
+      }
+      return gelesen
     }
     if (tab === 'ungelesen') {
       if (ungelesenFilter === 'wunsch') {
@@ -33,7 +40,7 @@ export default function TabContent({
       return books.filter((b) => b.status === 'ungelesen' || b.status === 'wunsch')
     }
     return []
-  }, [books, tab, ungelesenFilter, ratingFilter])
+  }, [books, tab, ungelesenFilter, ratingFilter, audiobookFilter])
 
   if (loading) return <LoadingSpinner />
   if (error) return <p className="error-state">Fehler beim Laden: {error}</p>
@@ -58,24 +65,56 @@ export default function TabContent({
       )}
 
       {tab === 'gelesen' && (
-        <div className="sub-filter rating-filter">
-          <button
-            className={`sub-filter-btn ${ratingFilter === null ? 'active' : ''}`}
-            onClick={() => setRatingFilter(null)}
-          >
-            Alle
-          </button>
-          {[1, 2, 3, 4, 5].map((r) => (
+        <>
+          <div className="sub-filter rating-filter">
             <button
-              key={r}
-              className={`rating-filter-btn ${ratingFilter === r ? 'active' : ''}`}
-              onClick={() => setRatingFilter(r)}
-              title={`Nur Bewertung ${r}`}
+              className={`sub-filter-btn ${ratingFilter === null ? 'active' : ''}`}
+              onClick={() => setRatingFilter(null)}
             >
-              <img src={RATING_IMAGES[r - 1]} alt={`Bewertung ${r}`} className="rating-filter-icon" />
+              Alle
             </button>
-          ))}
-        </div>
+            {[1, 2, 3, 4, 5].map((r) => (
+              <button
+                key={r}
+                className={`rating-filter-btn ${ratingFilter === r ? 'active' : ''}`}
+                onClick={() => setRatingFilter(r)}
+                title={`Nur Bewertung ${r}`}
+              >
+                <img src={RATING_IMAGES[r - 1]} alt={`Bewertung ${r}`} className="rating-filter-icon" />
+              </button>
+            ))}
+          </div>
+
+          <div className="sub-filter audiobook-filter">
+            <button
+              className={`sub-filter-btn ${audiobookFilter === null ? 'active' : ''}`}
+              onClick={() => setAudiobookFilter(null)}
+            >
+              Alle
+            </button>
+            <button
+              className={`sub-filter-btn ${audiobookFilter === false ? 'active' : ''}`}
+              onClick={() => setAudiobookFilter(false)}
+            >
+              Ohne Hörbücher
+            </button>
+          </div>
+
+          <div className="sub-filter monthly-breakdown-filter">
+            <button
+              className={`sub-filter-btn ${!showMonthlyBreakdown ? 'active' : ''}`}
+              onClick={() => setShowMonthlyBreakdown(false)}
+            >
+              Nach Jahren
+            </button>
+            <button
+              className={`sub-filter-btn ${showMonthlyBreakdown ? 'active' : ''}`}
+              onClick={() => setShowMonthlyBreakdown(true)}
+            >
+              Nach Monaten
+            </button>
+          </div>
+        </>
       )}
 
       {tab === 'gelesen' ? (
@@ -84,6 +123,7 @@ export default function TabContent({
           onBookClick={onSelectBook}
           showRatings={showRatings}
           filterActive={ratingFilter !== null}
+          showMonthlyBreakdown={showMonthlyBreakdown}
         />
       ) : (
         <BookGrid
@@ -125,7 +165,7 @@ export default function TabContent({
   )
 }
 
-function GelesenView({ books, onBookClick, showRatings, filterActive }) {
+function GelesenView({ books, onBookClick, showRatings, filterActive, showMonthlyBreakdown }) {
   const grouped = groupBooksByYear(books)
   const years = Object.keys(grouped).sort((a, b) => b - a)
 
@@ -139,6 +179,30 @@ function GelesenView({ books, onBookClick, showRatings, filterActive }) {
     )
   }
 
+  // Jahresansicht (default): Bücher pro Jahr in einem Grid, nach Monat absteigend sortiert
+  if (!showMonthlyBreakdown) {
+    return (
+      <div>
+        {years.map((year) => {
+          const monthKeys = Object.keys(grouped[year]).sort((a, b) => b - a)
+          const booksForYear = monthKeys.flatMap((month) => grouped[year][month])
+          return (
+            <section key={year} className="year-section">
+              <h2 className="year-header">{year}</h2>
+              <BookGrid
+                books={booksForYear}
+                onBookClick={onBookClick}
+                showRatings={showRatings}
+                sortable={false}
+              />
+            </section>
+          )
+        })}
+      </div>
+    )
+  }
+
+  // Monatsansicht: wie bisher mit Monatsgruppen
   return (
     <div>
       {years.map((year) => (

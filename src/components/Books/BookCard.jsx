@@ -9,6 +9,7 @@ export default function BookCard({ book, onClick, showRatings, showProgress }) {
   const [imgError, setImgError] = React.useState(false)
   const showFallback = !book.cover_url || imgError
   const isLent = !!book.lent_to
+  const isAudiobook = !!book.is_audiobook
 
   return (
     <div className="book-card" onClick={() => onClick(book)}>
@@ -28,6 +29,12 @@ export default function BookCard({ book, onClick, showRatings, showProgress }) {
         )}
         {isLent && (
           <img src={sleepingHeart} alt="Verliehen" className="book-lent-badge" title={`Verliehen an ${book.lent_to}`} />
+        )}
+        {isAudiobook && (
+          <div className="book-audiobook-badge" title="Hörbuch">
+            <span className="book-audiobook-icon">🎧</span>
+            <span className="book-audiobook-text">Hörbuch</span>
+          </div>
         )}
       </div>
       {showProgress && book.progress > 0 && (
