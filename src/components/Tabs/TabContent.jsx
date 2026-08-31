@@ -17,16 +17,20 @@ export default function TabContent({
 }) {
   const { books, loading, error, createBook, editBook, removeBook, reorderBooks } = useBooks()
   const [ungelesenFilter, setUngelesenFilter] = useState('alle') // 'alle' | 'wunsch'
-  const [ratingFilter, setRatingFilter] = useState(null) // null | 1-5
+  const [ratingFilter, setRatingFilter] = useState([]) // leeres Array = Alle, sonst Mehrfachauswahl aus 1-5
   const [audiobookFilter, setAudiobookFilter] = useState(null) // null = alle, false = ohne Hörbücher
+
+  const toggleRating = (r) => {
+    setRatingFilter((prev) => (prev.includes(r) ? prev.filter((v) => v !== r) : [...prev, r]))
+  }
   const [showMonthlyBreakdown, setShowMonthlyBreakdown] = useState(false) // false = Jahresansicht, true = Monatsansicht
 
   const filteredBooks = useMemo(() => {
     if (tab === 'aktuell') return books.filter((b) => b.status === 'aktuell')
     if (tab === 'gelesen') {
       let gelesen = books.filter((b) => b.status === 'gelesen')
-      if (ratingFilter !== null) {
-        gelesen = gelesen.filter((b) => b.rating === ratingFilter)
+      if (ratingFilter.length > 0) {
+        gelesen = gelesen.filter((b) => ratingFilter.includes(b.rating))
       }
       if (audiobookFilter === false) {
         gelesen = gelesen.filter((b) => !b.is_audiobook)
@@ -68,17 +72,17 @@ export default function TabContent({
         <>
           <div className="sub-filter rating-filter">
             <button
-              className={`sub-filter-btn ${ratingFilter === null ? 'active' : ''}`}
-              onClick={() => setRatingFilter(null)}
+              className={`sub-filter-btn ${ratingFilter.length === 0 ? 'active' : ''}`}
+              onClick={() => setRatingFilter([])}
             >
               Alle
             </button>
             {[1, 2, 3, 4, 5].map((r) => (
               <button
                 key={r}
-                className={`rating-filter-btn ${ratingFilter === r ? 'active' : ''}`}
-                onClick={() => setRatingFilter(r)}
-                title={`Nur Bewertung ${r}`}
+                className={`rating-filter-btn ${ratingFilter.includes(r) ? 'active' : ''}`}
+                onClick={() => toggleRating(r)}
+                title={`Bewertung ${r} ein-/ausblenden`}
               >
                 <img src={RATING_IMAGES[r - 1]} alt={`Bewertung ${r}`} className="rating-filter-icon" />
               </button>
@@ -107,7 +111,7 @@ export default function TabContent({
           books={filteredBooks}
           onBookClick={onSelectBook}
           showRatings={showRatings}
-          filterActive={ratingFilter !== null}
+          filterActive={ratingFilter.length > 0}
           showMonthlyBreakdown={showMonthlyBreakdown}
         />
       ) : (
