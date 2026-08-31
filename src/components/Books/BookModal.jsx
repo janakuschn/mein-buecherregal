@@ -169,11 +169,15 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
 
   return (
     <div className="modal-overlay" onClick={closeAndSave}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={closeAndSave} aria-label="Schließen">
-          ✕
+      <div className="modal-shell" onClick={(e) => e.stopPropagation()}>
+        {/* Haken liegt außerhalb des scrollenden Bereichs (.modal-content),
+            damit er beim Scrollen in der Detailansicht sichtbar bleibt statt
+            mit dem Inhalt nach oben wegzuscrollen. */}
+        <button className="modal-done-btn" onClick={closeAndSave} aria-label="Fertig, speichert und schließt">
+          ✓
         </button>
 
+        <div className="modal-content">
         {showScanner && (
           <BarcodeScanner onDetected={handleSearch} onClose={() => setShowScanner(false)} />
         )}
@@ -351,6 +355,7 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
               Löschen
             </button>
           )}
+        </div>
         </div>
       </div>
     </div>
