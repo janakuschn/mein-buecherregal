@@ -237,41 +237,44 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
             )}
           </div>
 
-          {isNew && (
-            <div className="isbn-lookup-row">
-              <input
-                type="text"
-                placeholder="ISBN oder Titel eingeben"
-                value={isbn}
-                onChange={(e) => setIsbn(e.target.value)}
-              />
-              <button className="btn-secondary" onClick={() => handleSearch()} disabled={lookupLoading}>
-                {lookupLoading ? 'Suche...' : 'Suchen'}
-              </button>
-              <button className="btn-secondary" onClick={() => setShowScanner(true)} title="Barcode scannen">
-                📷 Scannen
-              </button>
-            </div>
-          )}
-          {lookupError && <p className="auth-error">{lookupError}</p>}
-
-          <input
-            className="modal-title-input"
-            type="text"
-            placeholder="Titel"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-          <input
-            className="modal-author-input"
-            type="text"
-            placeholder="Autor"
-            value={author}
-            onChange={(e) => setAuthor(e.target.value)}
-          />
-
           <StarRating rating={rating} onChange={setRating} />
         </div>
+
+        {/* Titel/Autor/ISBN-Suche liegen bewusst außerhalb des Headers oben
+            (der zeigt nur noch Cover + Bewertung), aber weiterhin ganz oben
+            im Inhalt, direkt unter dem Header. */}
+        {isNew && (
+          <div className="isbn-lookup-row">
+            <input
+              type="text"
+              placeholder="ISBN oder Titel eingeben"
+              value={isbn}
+              onChange={(e) => setIsbn(e.target.value)}
+            />
+            <button className="btn-secondary" onClick={() => handleSearch()} disabled={lookupLoading}>
+              {lookupLoading ? 'Suche...' : 'Suchen'}
+            </button>
+            <button className="btn-secondary" onClick={() => setShowScanner(true)} title="Barcode scannen">
+              📷 Scannen
+            </button>
+          </div>
+        )}
+        {lookupError && <p className="auth-error">{lookupError}</p>}
+
+        <input
+          className="modal-title-input"
+          type="text"
+          placeholder="Titel"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+        <input
+          className="modal-author-input"
+          type="text"
+          placeholder="Autor"
+          value={author}
+          onChange={(e) => setAuthor(e.target.value)}
+        />
 
         <div className="status-tags">
           {STATUS_OPTIONS.map((opt) => (
@@ -370,12 +373,14 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
               <div className="lend-form">
                 <div className="lend-form-row">
                   <input
+                    className="lend-form-name"
                     type="text"
                     placeholder="An wen?"
                     value={lendFormName}
                     onChange={(e) => setLendFormName(e.target.value)}
                   />
                   <input
+                    className="lend-form-date"
                     type="date"
                     value={lendFormDate}
                     onChange={(e) => setLendFormDate(e.target.value)}
@@ -385,7 +390,7 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
                   <button className="btn-primary" onClick={confirmLend} disabled={!lendFormName.trim()}>
                     Verleihen bestätigen
                   </button>
-                  <button className="btn-secondary" onClick={() => setShowLendForm(false)}>
+                  <button className="status-tag" onClick={() => setShowLendForm(false)}>
                     Abbrechen
                   </button>
                 </div>

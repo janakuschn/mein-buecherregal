@@ -794,30 +794,36 @@ h2 {
 }
 
 /* ---------- Modal ---------- */
+/* Immer als zentriertes Modal (nicht als randloses Bottom-Sheet) - auch auf
+   dem Iphone. Das Padding sorgt dafür, dass die Karte auch auf schmalen
+   Bildschirmen nie an den Rand stößt. Der abgedunkelte Hintergrund bleibt. */
 .modal-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.45);
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
   z-index: 50;
+  padding: 1.25rem;
 }
 
 /* .modal-shell: äußere, NICHT scrollende Hülle - hält Größe/Rundung/Schatten
    und den fix positionierten Haken-Button. .modal-content (innen) ist der
    tatsächlich scrollende Bereich. So bleibt der Haken beim Scrollen in der
-   Detailansicht immer sichtbar statt mit dem Inhalt wegzuscrollen. */
+   Detailansicht immer sichtbar statt mit dem Inhalt wegzuscrollen.
+   Der rosa Schatten greift die Farbe des Buttons "Aktuell" (aktiv) auf. */
 .modal-shell {
   background: white;
   width: 100%;
-  max-width: 480px;
-  max-height: 90vh;
-  border-radius: 20px 20px 0 0;
+  max-width: 420px;
+  max-height: 85vh;
+  border-radius: 20px;
   overflow: hidden;
   position: relative;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 10px 30px rgba(247, 201, 220, 0.55);
 }
 
 .modal-content {
@@ -829,18 +835,6 @@ h2 {
   gap: 0.75rem;
   flex: 1;
   min-height: 0;
-}
-
-@media (min-width: 600px) {
-  .modal-overlay {
-    align-items: center;
-  }
-  .modal-shell {
-    border-radius: 20px;
-  }
-  .modal-top-panel {
-    border-radius: 20px 20px 40px 40px;
-  }
 }
 
 .modal-close {
@@ -899,7 +893,7 @@ h2 {
   width: calc(100% + 3rem);
   margin: -2rem -1.5rem 0.5rem;
   background: var(--color-header-bg);
-  border-radius: 0 0 40px 40px;
+  border-radius: 20px 20px 40px 40px;
   padding: 2rem 1.5rem 1.5rem;
   box-shadow: 0 6px 12px rgba(238, 124, 48, 0.15);
   display: flex;
@@ -1062,17 +1056,41 @@ h2 {
 
 .lend-form-row {
   display: flex;
+  flex-direction: column;
   gap: 0.5rem;
 }
 
-.lend-form-row input {
-  flex: 1;
+/* "An wen?" als runde Box wie .modal-notes oben. */
+.lend-form-name {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
   font-size: 16px; /* verhindert iOS-Zoom beim Fokussieren, siehe .isbn-lookup-row input */
+}
+
+/* Datumsauswahl in Rosa wie der Button "Aktuell" im ausgewählten Zustand
+   (.status-tag-active). */
+.lend-form-date {
+  width: 100%;
+  background: var(--color-header-bg);
+  color: var(--color-header-text);
+  border: 1px solid var(--color-header-bg);
+  border-radius: 999px;
+  padding: 0.75rem 1rem;
+  font-size: 16px; /* verhindert iOS-Zoom beim Fokussieren, siehe .isbn-lookup-row input */
+  box-shadow: 0 2px 5px rgba(247, 201, 220, 0.6);
 }
 
 .lend-form-actions {
   display: flex;
   gap: 0.5rem;
+}
+
+/* Abbrechen nutzt .status-tag (siehe JSX) - hier nur die Breite an
+   "Verleihen bestätigen" (.btn-primary, flex:1) angleichen. */
+.lend-form-actions .status-tag {
+  flex: 1;
 }
 
 .modal-title-input {
