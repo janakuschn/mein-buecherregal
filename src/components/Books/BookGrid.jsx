@@ -15,9 +15,21 @@ function SortableBookCard({ book, onClick, showRatings, showProgress }) {
     opacity: isDragging ? 0.5 : 1,
   }
 
+  // attributes/listeners werden NICHT mehr auf die ganze Karte gelegt,
+  // sondern als dragHandleProps an BookCard durchgereicht - dort landen sie
+  // nur auf dem kleinen Ziehpunkt unten rechts auf dem Cover. So löst
+  // Antippen/Gedrückthalten auf dem Rest der Karte kein Drag mehr aus und
+  // kollidiert nicht mehr mit dem Öffnen der Detailansicht oder dem
+  // Thalia-Teilen-Link.
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <BookCard book={book} onClick={onClick} showRatings={showRatings} showProgress={showProgress} />
+    <div ref={setNodeRef} style={style}>
+      <BookCard
+        book={book}
+        onClick={onClick}
+        showRatings={showRatings}
+        showProgress={showProgress}
+        dragHandleProps={{ ...attributes, ...listeners }}
+      />
     </div>
   )
 }

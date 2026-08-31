@@ -6,7 +6,7 @@ import { isRealIsbn, thaliaUrlForIsbn } from '../../utils/thalia'
 
 const heartIcon = RATING_IMAGES[4] // ehemals "Bild 5"
 
-export default function BookCard({ book, onClick, showRatings, showProgress }) {
+export default function BookCard({ book, onClick, showRatings, showProgress, dragHandleProps }) {
   const [imgError, setImgError] = React.useState(false)
   const showFallback = !book.cover_url || imgError
   const isLent = !!book.lent_to
@@ -50,6 +50,23 @@ export default function BookCard({ book, onClick, showRatings, showProgress }) {
           <div className="book-audiobook-badge" title="Hörbuch">
             🎧
           </div>
+        )}
+        {dragHandleProps && (
+          // Nur dieser Ziehpunkt startet das Verschieben (dnd-kit
+          // attributes/listeners landen ausschließlich hier). Ein "span"
+          // statt "button", damit kein interaktives Element in einem <a>
+          // verschachtelt wird (bei Büchern mit Thalia-Link). stopPropagation
+          // verhindert, dass ein kurzes Antippen des Punkts zusätzlich die
+          // Detailansicht öffnet.
+          <span
+            className="book-drag-handle"
+            role="button"
+            aria-label="Ziehen zum Sortieren"
+            onClick={(e) => e.stopPropagation()}
+            {...dragHandleProps}
+          >
+            ⠿
+          </span>
         )}
       </div>
       {showProgress && book.progress > 0 && (
