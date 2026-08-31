@@ -362,28 +362,32 @@ h2 {
   border-color: var(--color-header-bg);
 }
 
-.audiobook-filter .sub-filter-btn {
-  background: white;
-  border-color: var(--color-header-bg);
-  color: var(--color-header-bg);
-}
-
-.audiobook-filter .sub-filter-btn.active {
+.rating-filter .sub-filter-btn.active {
   background: var(--color-header-bg);
   color: var(--color-header-text);
   border-color: var(--color-header-bg);
 }
 
-.monthly-breakdown-filter .sub-filter-btn {
-  background: white;
-  border-color: var(--color-header-bg);
-  color: var(--color-header-bg);
+/* Kompakte Einzel-Toggle-Buttons (Hörbücher, Monatsansicht) statt der
+   vorherigen Alle/X-Button-Paare - spart Platz auf dem iPhone. Hellrosa
+   gefüllt = aus (Default), kräftiges Rosa = an. */
+.toggle-filter-row {
+  gap: 0.5rem;
 }
 
-.monthly-breakdown-filter .sub-filter-btn.active {
+.toggle-filter-btn {
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  border: none;
+  background: #fce9f1;
+  color: var(--color-header-text);
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.toggle-filter-btn.active {
   background: var(--color-header-bg);
   color: var(--color-header-text);
-  border-color: var(--color-header-bg);
 }
 
 .rating-filter-btn {

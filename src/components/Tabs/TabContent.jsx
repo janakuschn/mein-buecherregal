@@ -85,33 +85,18 @@ export default function TabContent({
             ))}
           </div>
 
-          <div className="sub-filter audiobook-filter">
+          <div className="sub-filter toggle-filter-row">
             <button
-              className={`sub-filter-btn ${audiobookFilter === null ? 'active' : ''}`}
-              onClick={() => setAudiobookFilter(null)}
+              className={`toggle-filter-btn ${audiobookFilter === false ? 'active' : ''}`}
+              onClick={() => setAudiobookFilter(audiobookFilter === false ? null : false)}
             >
-              Alle
+              Hörbücher
             </button>
             <button
-              className={`sub-filter-btn ${audiobookFilter === false ? 'active' : ''}`}
-              onClick={() => setAudiobookFilter(false)}
+              className={`toggle-filter-btn ${showMonthlyBreakdown ? 'active' : ''}`}
+              onClick={() => setShowMonthlyBreakdown(!showMonthlyBreakdown)}
             >
-              Ohne Hörbücher
-            </button>
-          </div>
-
-          <div className="sub-filter monthly-breakdown-filter">
-            <button
-              className={`sub-filter-btn ${!showMonthlyBreakdown ? 'active' : ''}`}
-              onClick={() => setShowMonthlyBreakdown(false)}
-            >
-              Nach Jahren
-            </button>
-            <button
-              className={`sub-filter-btn ${showMonthlyBreakdown ? 'active' : ''}`}
-              onClick={() => setShowMonthlyBreakdown(true)}
-            >
-              Nach Monaten
+              Monatsansicht
             </button>
           </div>
         </>
