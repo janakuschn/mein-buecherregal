@@ -261,21 +261,6 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
         )}
         {lookupError && <p className="auth-error">{lookupError}</p>}
 
-        <input
-          className="modal-title-input"
-          type="text"
-          placeholder="Titel"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-        <input
-          className="modal-author-input"
-          type="text"
-          placeholder="Autor"
-          value={author}
-          onChange={(e) => setAuthor(e.target.value)}
-        />
-
         <div className="status-tags">
           {STATUS_OPTIONS.map((opt) => (
             <button
