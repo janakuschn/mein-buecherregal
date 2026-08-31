@@ -167,17 +167,22 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
   // weitergehen soll (statt des vorherigen Gedrückthalten-Menüs auf den
   // Buchcovern in der Übersicht, das nicht zuverlässig funktioniert hat).
   // Nur bei Büchern mit echter ISBN (kein "manual-..."-Platzhalter).
+  // Statt window.confirm() (sieht auf iOS wie eine Systemwarnung aus und
+  // lässt sich nicht stylen) ein eigenes Modal im App-Design.
   const hasThaliaLink = isRealIsbn(isbn)
+  const [showThaliaConfirm, setShowThaliaConfirm] = useState(false)
 
   const handleCoverClick = () => {
     if (!hasThaliaLink) return
-    const confirmed = window.confirm(
-      `Bei Thalia nach "${title}" suchen? Öffnet in einem neuen Browserfenster.`
-    )
-    if (confirmed) {
-      window.open(thaliaUrlForIsbn(isbn), '_blank', 'noopener,noreferrer')
-    }
+    setShowThaliaConfirm(true)
   }
+
+  const confirmThalia = () => {
+    window.open(thaliaUrlForIsbn(isbn), '_blank', 'noopener,noreferrer')
+    setShowThaliaConfirm(false)
+  }
+
+  const cancelThalia = () => setShowThaliaConfirm(false)
 
   // Kein expliziter Speichern-Button mehr: Schließen (X oder Klick auf den
   // abgedunkelten Hintergrund) speichert automatisch. Ausnahme: ein neu
@@ -194,6 +199,7 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
   }
 
   return (
+    <>
     <div className="modal-overlay" onClick={closeAndSave}>
       <div className="modal-shell" onClick={(e) => e.stopPropagation()}>
         {/* Haken liegt außerhalb des scrollenden Bereichs (.modal-content),
@@ -393,5 +399,25 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
         </div>
       </div>
     </div>
+
+    {showThaliaConfirm && (
+      <div className="thalia-confirm-overlay" onClick={cancelThalia}>
+        <div className="thalia-confirm-box" onClick={(e) => e.stopPropagation()}>
+          <p className="thalia-confirm-text">
+            Bei Thalia nach <strong>„{title}"</strong> suchen? Öffnet in einem neuen
+            Browserfenster.
+          </p>
+          <div className="thalia-confirm-actions">
+            <button className="btn-secondary" onClick={cancelThalia}>
+              Abbrechen
+            </button>
+            <button className="btn-primary" onClick={confirmThalia}>
+              Zu Thalia
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   )
 }

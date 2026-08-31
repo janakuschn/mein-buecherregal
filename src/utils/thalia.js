@@ -16,5 +16,9 @@ export function isRealIsbn(isbn) {
 
 export function thaliaUrlForIsbn(isbn) {
   const cleaned = String(isbn).replace(/[^0-9Xx]/g, '')
-  return `https://www.thalia.de/shop/home/suchartikel/?sq=${encodeURIComponent(cleaned)}`
+  // Hinweis: /shop/home/suchartikel/ existiert bei Thalia nicht mehr und
+  // führte immer auf eine "Seite nicht gefunden"-Fehlerseite (im Browser
+  // geprüft). /suche ist die aktuelle Such-URL und liefert bei einer
+  // gültigen ISBN direkt den Treffer.
+  return `https://www.thalia.de/suche?sq=${encodeURIComponent(cleaned)}`
 }
