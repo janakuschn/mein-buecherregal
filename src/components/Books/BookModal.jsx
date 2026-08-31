@@ -403,10 +403,6 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
     {showThaliaConfirm && (
       <div className="thalia-confirm-overlay" onClick={cancelThalia}>
         <div className="thalia-confirm-box" onClick={(e) => e.stopPropagation()}>
-          <p className="thalia-confirm-text">
-            Bei Thalia nach <strong>„{title}"</strong> suchen? Öffnet in einem neuen
-            Browserfenster.
-          </p>
           <div className="thalia-confirm-actions">
             <button className="btn-secondary" onClick={cancelThalia}>
               Abbrechen
