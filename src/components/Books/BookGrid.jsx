@@ -1,6 +1,6 @@
 // ZIEL-PFAD: src/components/Books/BookGrid.jsx
 import React from 'react'
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
+import { DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { SortableContext, arrayMove, rectSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import BookCard from './BookCard'
@@ -23,9 +23,14 @@ function SortableBookCard({ book, onClick, showRatings, showProgress }) {
 }
 
 export default function BookGrid({ books, onBookClick, showRatings, showProgress, sortable, onReorder }) {
-  // Erst ab 8px Bewegung als "Ziehen" werten, damit ein normales Antippen
-  // weiterhin die Detailansicht öffnet statt einen Drag zu starten.
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
+  // Zwei Sensoren für verschiedene Input-Methoden:
+  // 1. PointerSensor (Desktop): ab 8px Bewegung = Drag
+  // 2. TouchSensor (iPhone/Android): 1 Sekunde Long Press + 5px Toleranz = Drag
+  // Damit funktioniert Drag & Drop sowohl auf Desktop als auch auf Touch-Geräten.
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 1000, tolerance: 5 } })
+  )
 
   if (!books || books.length === 0) {
     return <p className="empty-state">Noch keine Bücher in dieser Ansicht.</p>

@@ -31,9 +31,11 @@ export default function BookCard({ book, onClick, showRatings, showProgress }) {
           <img src={sleepingHeart} alt="Verliehen" className="book-lent-badge" title={`Verliehen an ${book.lent_to}`} />
         )}
         {isAudiobook && (
+          <div className="book-audiobook-overlay"></div>
+        )}
+        {isAudiobook && (
           <div className="book-audiobook-badge" title="Hörbuch">
-            <span className="book-audiobook-icon">🎧</span>
-            <span className="book-audiobook-text">Hörbuch</span>
+            🎧
           </div>
         )}
       </div>
