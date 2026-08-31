@@ -902,6 +902,7 @@ h2 {
 
 .lend-form-row input {
   flex: 1;
+  font-size: 16px; /* verhindert iOS-Zoom beim Fokussieren, siehe .isbn-lookup-row input */
 }
 
 .lend-form-actions {
@@ -945,6 +946,7 @@ h2 {
   padding: 0.75rem 1rem;
   min-height: 70px;
   font-family: inherit;
+  font-size: 16px; /* verhindert iOS-Zoom beim Fokussieren, siehe .isbn-lookup-row input */
   resize: vertical;
   margin-top: 0.5rem;
 }
@@ -962,6 +964,11 @@ h2 {
   padding: 0.5rem 0.75rem;
   border-radius: 999px;
   border: 1px solid var(--color-border);
+  /* 16px verhindert, dass iOS Safari beim Fokussieren automatisch reinzoomt
+     (passiert bei Eingabefeldern mit Schriftgröße unter 16px). Ein
+     Zurückzoomen per Code ist nicht zuverlässig möglich - das Verhindern
+     des Reinzoomens ist der einzige verlässliche Weg. */
+  font-size: 16px;
 }
 
 .status-tags {
