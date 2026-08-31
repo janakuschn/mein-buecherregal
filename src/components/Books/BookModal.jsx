@@ -333,58 +333,66 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
           </div>
         )}
 
-        <div className="audiobook-section">
+        {/* Hörbuch und Verleihen nebeneinander, solange Verleihen nur ein
+            Button ist. Sobald verliehen wird bzw. das Formular offen ist,
+            braucht der Verleihen-Status die volle Breite und rutscht als
+            eigener Block darunter (siehe .lend-section-expanded). */}
+        <div className="secondary-actions-row">
           <button
             className={`status-tag ${isAudiobook ? 'status-tag-active' : ''}`}
             onClick={() => setIsAudiobook(!isAudiobook)}
           >
             {isAudiobook ? '🎧 Hörbuch (aktiv)' : '🎧 Hörbuch'}
           </button>
-        </div>
 
-        <div className="lend-section">
-          {isLent ? (
-            <div className="lend-status">
-              <span>
-                📖 Verliehen an <strong>{lentTo}</strong> seit{' '}
-                {lentSince
-                  ? new Date(lentSince).toLocaleDateString('de-DE')
-                  : ''}
-              </span>
-              <button className="btn-secondary" onClick={handleReturn}>
-                Zurückbekommen
-              </button>
-            </div>
-          ) : showLendForm ? (
-            <div className="lend-form">
-              <div className="lend-form-row">
-                <input
-                  type="text"
-                  placeholder="An wen?"
-                  value={lendFormName}
-                  onChange={(e) => setLendFormName(e.target.value)}
-                />
-                <input
-                  type="date"
-                  value={lendFormDate}
-                  onChange={(e) => setLendFormDate(e.target.value)}
-                />
-              </div>
-              <div className="lend-form-actions">
-                <button className="btn-primary" onClick={confirmLend} disabled={!lendFormName.trim()}>
-                  Verleihen bestätigen
-                </button>
-                <button className="btn-secondary" onClick={() => setShowLendForm(false)}>
-                  Abbrechen
-                </button>
-              </div>
-            </div>
-          ) : (
+          {!isLent && !showLendForm && (
             <button className="status-tag" onClick={openLendForm}>
               📖 Verleihen
             </button>
           )}
         </div>
+
+        {(isLent || showLendForm) && (
+          <div className="lend-section-expanded">
+            {isLent ? (
+              <div className="lend-status">
+                <span>
+                  📖 Verliehen an <strong>{lentTo}</strong> seit{' '}
+                  {lentSince
+                    ? new Date(lentSince).toLocaleDateString('de-DE')
+                    : ''}
+                </span>
+                <button className="btn-secondary" onClick={handleReturn}>
+                  Zurückbekommen
+                </button>
+              </div>
+            ) : (
+              <div className="lend-form">
+                <div className="lend-form-row">
+                  <input
+                    type="text"
+                    placeholder="An wen?"
+                    value={lendFormName}
+                    onChange={(e) => setLendFormName(e.target.value)}
+                  />
+                  <input
+                    type="date"
+                    value={lendFormDate}
+                    onChange={(e) => setLendFormDate(e.target.value)}
+                  />
+                </div>
+                <div className="lend-form-actions">
+                  <button className="btn-primary" onClick={confirmLend} disabled={!lendFormName.trim()}>
+                    Verleihen bestätigen
+                  </button>
+                  <button className="btn-secondary" onClick={() => setShowLendForm(false)}>
+                    Abbrechen
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {saveError && <p className="auth-error">{saveError}</p>}
 
