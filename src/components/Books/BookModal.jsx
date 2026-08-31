@@ -4,6 +4,7 @@ import StarRating, { RATING_IMAGES } from './StarRating'
 import BarcodeScanner from '../Scanner/BarcodeScanner'
 import { lookupByISBN, lookupByText } from '../../services/openlibrary'
 import sleepingHeart from '../../assets/icons/sleeping-heart.png'
+import { isRealIsbn, thaliaUrlForIsbn } from '../../utils/thalia'
 
 const heartIcon = RATING_IMAGES[4] // ehemals "Bild 5"
 
@@ -162,6 +163,22 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
     }
   }
 
+  // Klick aufs Cover in der Detailansicht: fragt nach, ob es zu Thalia
+  // weitergehen soll (statt des vorherigen Gedrückthalten-Menüs auf den
+  // Buchcovern in der Übersicht, das nicht zuverlässig funktioniert hat).
+  // Nur bei Büchern mit echter ISBN (kein "manual-..."-Platzhalter).
+  const hasThaliaLink = isRealIsbn(isbn)
+
+  const handleCoverClick = () => {
+    if (!hasThaliaLink) return
+    const confirmed = window.confirm(
+      `Bei Thalia nach "${title}" suchen? Öffnet in einem neuen Browserfenster.`
+    )
+    if (confirmed) {
+      window.open(thaliaUrlForIsbn(isbn), '_blank', 'noopener,noreferrer')
+    }
+  }
+
   // Kein expliziter Speichern-Button mehr: Schließen (X oder Klick auf den
   // abgedunkelten Hintergrund) speichert automatisch. Ausnahme: ein neu
   // angelegtes Buch ohne Titel wird verworfen statt mit einem leeren Titel
@@ -192,7 +209,10 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
         )}
 
         <div className="modal-top-panel">
-          <div className={`modal-cover-wrapper ${isLent ? 'modal-cover-wrapper-lent' : ''}`}>
+          <div
+            className={`modal-cover-wrapper ${isLent ? 'modal-cover-wrapper-lent' : ''} ${hasThaliaLink ? 'modal-cover-wrapper-linked' : ''}`}
+            onClick={handleCoverClick}
+          >
             {coverUrl && !coverLoadError ? (
               <img
                 src={coverUrl}
@@ -309,7 +329,7 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
 
         <div className="audiobook-section">
           <button
-            className={`btn-secondary ${isAudiobook ? 'active' : ''}`}
+            className={`status-tag ${isAudiobook ? 'status-tag-active' : ''}`}
             onClick={() => setIsAudiobook(!isAudiobook)}
           >
             {isAudiobook ? '🎧 Hörbuch (aktiv)' : '🎧 Hörbuch'}
@@ -354,7 +374,7 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
               </div>
             </div>
           ) : (
-            <button className="btn-secondary" onClick={openLendForm}>
+            <button className="status-tag" onClick={openLendForm}>
               📖 Verleihen
             </button>
           )}

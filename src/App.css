@@ -804,60 +804,6 @@ h2 {
   z-index: 50;
 }
 
-/* Action-Sheet beim Gedrückthalten eines Buchcovers (Teilen/Thalia), im
-   Stil eines nativen iOS-Action-Sheets: unten angedockt, abgerundet,
-   Optionen als Liste. Höherer z-index als .modal-overlay, damit es auch
-   funktioniert, während gleichzeitig eine Detailansicht offen sein sollte. */
-.share-sheet-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  z-index: 200;
-  padding: 0 0.75rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
-}
-
-.share-sheet {
-  width: 100%;
-  max-width: 480px;
-  background: white;
-  border-radius: 16px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.share-sheet-title {
-  text-align: center;
-  font-size: 0.85rem;
-  color: var(--color-text-muted);
-  padding: 0.75rem 1rem 0.5rem;
-  margin: 0;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.share-sheet-btn {
-  background: none;
-  border: none;
-  border-bottom: 1px solid var(--color-border);
-  padding: 1rem;
-  font-size: 1rem;
-  color: var(--color-header-text);
-  cursor: pointer;
-}
-
-.share-sheet-btn:active {
-  background: var(--color-bg);
-}
-
-.share-sheet-cancel {
-  font-weight: 700;
-  color: var(--color-text);
-  border-bottom: none;
-}
-
 /* .modal-shell: äußere, NICHT scrollende Hülle - hält Größe/Rundung/Schatten
    und den fix positionierten Haken-Button. .modal-content (innen) ist der
    tatsächlich scrollende Bereich. So bleibt der Haken beim Scrollen in der
@@ -972,6 +918,17 @@ h2 {
   margin-top: 0.5rem;
 }
 
+/* Nur bei Büchern mit echter ISBN antippbar (siehe BookModal.jsx
+   handleCoverClick) - fragt nach, ob es zu Thalia weitergehen soll. */
+.modal-cover-wrapper-linked {
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.modal-cover-wrapper-linked:active {
+  transform: scale(0.96);
+}
+
 .modal-cover-wrapper-lent .modal-cover,
 .modal-cover-wrapper-lent .modal-cover-placeholder {
   opacity: 0.3;
@@ -1031,20 +988,15 @@ h2 {
   width: 100%;
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
-}
-
-.audiobook-section .btn-secondary {
-  width: 100%;
-}
-
-.audiobook-section .btn-secondary.active {
-  background: var(--color-header-bg);
-  color: white;
+  display: flex;
+  justify-content: center;
 }
 
 .lend-section {
   width: 100%;
   margin-top: 0.5rem;
+  display: flex;
+  justify-content: center;
 }
 
 .lend-status {
