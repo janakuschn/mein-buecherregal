@@ -36,16 +36,6 @@ function addDays(isoDate: string, days: number) {
   return d.toISOString().slice(0, 10)
 }
 
-function formatDe(isoDate: string) {
-  return new Date(`${isoDate}T12:00:00Z`).toLocaleDateString('de-DE', {
-    weekday: 'short',
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    timeZone: 'UTC',
-  })
-}
-
 const json = (body: unknown) =>
   new Response(JSON.stringify(body), { headers: { 'Content-Type': 'application/json' } })
 
@@ -102,7 +92,7 @@ Deno.serve(async () => {
 
     const payload = JSON.stringify({
       title: daysBefore === 1 ? 'Morgen zurückgeben' : 'In 3 Tagen zurückgeben',
-      body: `„${book.title}“ bitte bis ${formatDe(book.borrowed_until)} zurückgeben.`,
+      body: book.title,
       tag: `borrow-${book.id}-${daysBefore}`,
     })
 
