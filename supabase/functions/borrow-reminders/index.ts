@@ -53,15 +53,24 @@ Deno.serve(async () => {
   const { date, hour } = berlinNow()
   if (hour < SEND_FROM_HOUR) return json({ skipped: 'vor 9 Uhr', date, hour })
 
+  if (!Deno.env.get('VAPID_PRIVATE_KEY')) return json({ error: 'VAPID-Secrets fehlen' })
   webpush.setVapidDetails(
     Deno.env.get('VAPID_SUBJECT')!,
     Deno.env.get('VAPID_PUBLIC_KEY')!,
     Deno.env.get('VAPID_PRIVATE_KEY')!
   )
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-  )
+  // Service-Key: klassisch SUPABASE_SERVICE_ROLE_KEY, bei neuen API-Keys
+  // ggf. nur SUPABASE_SECRET_KEYS (JSON) - beides abdecken.
+  let serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+  if (!serviceKey) {
+    try {
+      serviceKey = Object.values(JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS') ?? '{}'))[0] as string
+    } catch {
+      /* leer lassen */
+    }
+  }
+  if (!serviceKey) return json({ error: 'Kein Service-Key verfügbar' })
+  const supabase = createClient(Deno.env.get('SUPABASE_URL')!, serviceKey)
 
   const dueToDaysBefore = new Map(DAYS_BEFORE.map((n) => [addDays(date, n), n]))
   const { data: books, error } = await supabase
