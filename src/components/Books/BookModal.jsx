@@ -12,6 +12,12 @@ function todayIsoDate() {
   return new Date().toISOString().slice(0, 10)
 }
 
+function isoDateInDays(days) {
+  const d = new Date()
+  d.setDate(d.getDate() + days)
+  return d.toISOString().slice(0, 10)
+}
+
 const STATUS_OPTIONS = [
   { id: 'aktuell', label: 'Aktuell' },
   { id: 'gelesen', label: 'Gelesen' },
@@ -72,15 +78,12 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
   const [lendFormDate, setLendFormDate] = useState(todayIsoDate())
   const isLent = !!lentTo
 
-  // Ausleihen (umgekehrte Richtung): Buch gehört mir nicht, ich habe es
-  // mir geliehen. Erscheint normal in der Übersicht, nur mit
-  // "Geliehen"-Badge. Schließt Verleihen aus (und umgekehrt).
-  const [borrowedFrom, setBorrowedFrom] = useState(book?.borrowed_from || '')
-  const [borrowedSince, setBorrowedSince] = useState(book?.borrowed_since || '')
-  const [showBorrowForm, setShowBorrowForm] = useState(false)
-  const [borrowFormName, setBorrowFormName] = useState('')
-  const [borrowFormDate, setBorrowFormDate] = useState(todayIsoDate())
-  const isBorrowed = !!borrowedFrom
+  // Ausleihen (umgekehrte Richtung): Buch gehört mir nicht. Der Button
+  // "Geliehen" schaltet den Status um und zeigt daneben nur die
+  // Datumsauswahl "zurück bis". Bestätigt wird wie alles andere über den
+  // Haken oben rechts. Schließt Verleihen aus (und umgekehrt).
+  const [borrowedUntil, setBorrowedUntil] = useState(book?.borrowed_until || '')
+  const isBorrowed = !!borrowedUntil
 
   // Hörbuch: Toggle-State, wird mit handleSave in die DB gespeichert
   const [isAudiobook, setIsAudiobook] = useState(book?.is_audiobook || false)
@@ -103,22 +106,8 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
     setLentSince('')
   }
 
-  const openBorrowForm = () => {
-    setBorrowFormName('')
-    setBorrowFormDate(todayIsoDate())
-    setShowBorrowForm(true)
-  }
-
-  const confirmBorrow = () => {
-    if (!borrowFormName.trim()) return
-    setBorrowedFrom(borrowFormName.trim())
-    setBorrowedSince(borrowFormDate)
-    setShowBorrowForm(false)
-  }
-
-  const handleGiveBack = () => {
-    setBorrowedFrom('')
-    setBorrowedSince('')
+  const toggleBorrowed = () => {
+    setBorrowedUntil(isBorrowed ? '' : isoDateInDays(28))
   }
 
   // Erkennt selbst, ob im Suchfeld eine ISBN (nur Ziffern/X, 10 oder 13
@@ -173,16 +162,10 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
       completed_year: status === 'gelesen' ? Number(completedYear) : null,
       lent_to: lentTo.trim() || null,
       lent_since: lentTo.trim() ? lentSince || todayIsoDate() : null,
+      borrowed_until: borrowedUntil || null,
       is_audiobook: isAudiobook,
       page_count: pageCount || null,
       description: description.trim() || null,
-    }
-    // Ausleih-Felder nur mitschicken, wenn sie genutzt werden bzw. wurden -
-    // so klappt normales Speichern auch, falls die Spalten in Supabase
-    // noch fehlen (supabase/add_borrowed_columns.sql).
-    if (borrowedFrom.trim() || book?.borrowed_from) {
-      data.borrowed_from = borrowedFrom.trim() || null
-      data.borrowed_since = borrowedFrom.trim() ? borrowedSince || todayIsoDate() : null
     }
     try {
       await onSave(data)
@@ -192,7 +175,7 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
         setSaveError('Dieses Buch (ISBN) ist bereits in deiner Bibliothek vorhanden.')
       } else if (err?.message?.toLowerCase().includes('schema cache')) {
         setSaveError(
-          'Datenbank ist noch nicht aktuell: Bitte zuerst "supabase/add_borrowed_columns.sql" im Supabase SQL Editor ausführen (fügt borrowed_from/borrowed_since zur Tabelle "books" hinzu).'
+          'Datenbank ist noch nicht aktuell: Bitte zuerst "supabase/add_borrowed_columns.sql" im Supabase SQL Editor ausführen (fügt borrowed_until zur Tabelle "books" hinzu).'
         )
       } else {
         setSaveError(err?.message || 'Speichern fehlgeschlagen. Bitte versuche es erneut.')
@@ -388,62 +371,31 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
             {isAudiobook ? '🎧 Hörbuch (aktiv)' : '🎧 Hörbuch'}
           </button>
 
-          {!isLent && !showLendForm && !isBorrowed && !showBorrowForm && (
+          {!isLent && !showLendForm && !isBorrowed && (
             <button className="status-tag" onClick={openLendForm}>
               📖 Verleihen
             </button>
           )}
         </div>
 
-        {/* Ausleihen: eigene Zeile darunter, nur wenn nicht verliehen. */}
-        {!isLent && !showLendForm && !isBorrowed && !showBorrowForm && (
+        {/* Geliehen: Toggle-Button, daneben (gleich breit) nur das
+            Rückgabedatum. Nicht verfügbar, solange das Buch verliehen ist. */}
+        {!isLent && !showLendForm && (
           <div className="secondary-actions-row">
-            <button className="status-tag" onClick={openBorrowForm}>
+            <button
+              className={`status-tag ${isBorrowed ? 'status-tag-active' : ''}`}
+              onClick={toggleBorrowed}
+            >
               🤝 Geliehen
             </button>
-          </div>
-        )}
-
-        {(isBorrowed || showBorrowForm) && (
-          <div className="lend-section-expanded">
-            {isBorrowed ? (
-              <div className="lend-status">
-                <span>
-                  🤝 Geliehen von <strong>{borrowedFrom}</strong> seit{' '}
-                  {borrowedSince
-                    ? new Date(borrowedSince).toLocaleDateString('de-DE')
-                    : ''}
-                </span>
-                <button className="btn-secondary" onClick={handleGiveBack}>
-                  Zurückgegeben
-                </button>
-              </div>
-            ) : (
-              <div className="lend-form">
-                <div className="lend-form-row">
-                  <input
-                    className="lend-form-name"
-                    type="text"
-                    placeholder="Von wem?"
-                    value={borrowFormName}
-                    onChange={(e) => setBorrowFormName(e.target.value)}
-                  />
-                  <input
-                    className="lend-form-date"
-                    type="date"
-                    value={borrowFormDate}
-                    onChange={(e) => setBorrowFormDate(e.target.value)}
-                  />
-                </div>
-                <div className="lend-form-actions">
-                  <button className="btn-primary" onClick={confirmBorrow} disabled={!borrowFormName.trim()}>
-                    Ausleihen bestätigen
-                  </button>
-                  <button className="status-tag" onClick={() => setShowBorrowForm(false)}>
-                    Abbrechen
-                  </button>
-                </div>
-              </div>
+            {isBorrowed && (
+              <input
+                className="borrow-date"
+                type="date"
+                value={borrowedUntil}
+                onChange={(e) => e.target.value && setBorrowedUntil(e.target.value)}
+                aria-label="Zurückgeben bis"
+              />
             )}
           </div>
         )}

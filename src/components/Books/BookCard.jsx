@@ -15,7 +15,7 @@ export default function BookCard({ book, onClick, showRatings, showProgress, dra
   const [imgError, setImgError] = React.useState(false)
   const showFallback = !book.cover_url || imgError
   const isLent = !!book.lent_to
-  const isBorrowed = !!book.borrowed_from
+  const isBorrowed = !!book.borrowed_until
   const isAudiobook = !!book.is_audiobook
 
   return (
@@ -38,7 +38,7 @@ export default function BookCard({ book, onClick, showRatings, showProgress, dra
           <img src={sleepingHeart} alt="Verliehen" className="book-lent-badge" title={`Verliehen an ${book.lent_to}`} />
         )}
         {isBorrowed && (
-          <span className="borrowed-badge borrowed-badge-small" title={`Geliehen von ${book.borrowed_from}`}>
+          <span className="borrowed-badge borrowed-badge-small" title={`Geliehen, zurück bis ${new Date(book.borrowed_until).toLocaleDateString('de-DE')}`}>
             Geliehen
           </span>
         )}
