@@ -72,6 +72,16 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
   const [lendFormDate, setLendFormDate] = useState(todayIsoDate())
   const isLent = !!lentTo
 
+  // Ausleihen (umgekehrte Richtung): Buch gehört mir nicht, ich habe es
+  // mir geliehen. Erscheint normal in der Übersicht, nur mit
+  // "Geliehen"-Badge. Schließt Verleihen aus (und umgekehrt).
+  const [borrowedFrom, setBorrowedFrom] = useState(book?.borrowed_from || '')
+  const [borrowedSince, setBorrowedSince] = useState(book?.borrowed_since || '')
+  const [showBorrowForm, setShowBorrowForm] = useState(false)
+  const [borrowFormName, setBorrowFormName] = useState('')
+  const [borrowFormDate, setBorrowFormDate] = useState(todayIsoDate())
+  const isBorrowed = !!borrowedFrom
+
   // Hörbuch: Toggle-State, wird mit handleSave in die DB gespeichert
   const [isAudiobook, setIsAudiobook] = useState(book?.is_audiobook || false)
 
@@ -91,6 +101,24 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
   const handleReturn = () => {
     setLentTo('')
     setLentSince('')
+  }
+
+  const openBorrowForm = () => {
+    setBorrowFormName('')
+    setBorrowFormDate(todayIsoDate())
+    setShowBorrowForm(true)
+  }
+
+  const confirmBorrow = () => {
+    if (!borrowFormName.trim()) return
+    setBorrowedFrom(borrowFormName.trim())
+    setBorrowedSince(borrowFormDate)
+    setShowBorrowForm(false)
+  }
+
+  const handleGiveBack = () => {
+    setBorrowedFrom('')
+    setBorrowedSince('')
   }
 
   // Erkennt selbst, ob im Suchfeld eine ISBN (nur Ziffern/X, 10 oder 13
@@ -149,6 +177,13 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
       page_count: pageCount || null,
       description: description.trim() || null,
     }
+    // Ausleih-Felder nur mitschicken, wenn sie genutzt werden bzw. wurden -
+    // so klappt normales Speichern auch, falls die Spalten in Supabase
+    // noch fehlen (supabase/add_borrowed_columns.sql).
+    if (borrowedFrom.trim() || book?.borrowed_from) {
+      data.borrowed_from = borrowedFrom.trim() || null
+      data.borrowed_since = borrowedFrom.trim() ? borrowedSince || todayIsoDate() : null
+    }
     try {
       await onSave(data)
     } catch (err) {
@@ -157,7 +192,7 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
         setSaveError('Dieses Buch (ISBN) ist bereits in deiner Bibliothek vorhanden.')
       } else if (err?.message?.toLowerCase().includes('schema cache')) {
         setSaveError(
-          'Datenbank ist noch nicht aktuell: Bitte zuerst "add_lent_columns.sql" im Supabase SQL Editor ausführen (fügt lent_to/lent_since zur Tabelle "books" hinzu).'
+          'Datenbank ist noch nicht aktuell: Bitte zuerst "supabase/add_borrowed_columns.sql" im Supabase SQL Editor ausführen (fügt borrowed_from/borrowed_since zur Tabelle "books" hinzu).'
         )
       } else {
         setSaveError(err?.message || 'Speichern fehlgeschlagen. Bitte versuche es erneut.')
@@ -245,6 +280,7 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
             {isLent && (
               <img src={sleepingHeart} alt="Verliehen" className="modal-lent-badge" />
             )}
+            {isBorrowed && <span className="borrowed-badge">Geliehen</span>}
           </div>
 
           <StarRating rating={rating} onChange={setRating} />
@@ -352,12 +388,65 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
             {isAudiobook ? '🎧 Hörbuch (aktiv)' : '🎧 Hörbuch'}
           </button>
 
-          {!isLent && !showLendForm && (
+          {!isLent && !showLendForm && !isBorrowed && !showBorrowForm && (
             <button className="status-tag" onClick={openLendForm}>
               📖 Verleihen
             </button>
           )}
         </div>
+
+        {/* Ausleihen: eigene Zeile darunter, nur wenn nicht verliehen. */}
+        {!isLent && !showLendForm && !isBorrowed && !showBorrowForm && (
+          <div className="secondary-actions-row">
+            <button className="status-tag" onClick={openBorrowForm}>
+              🤝 Geliehen
+            </button>
+          </div>
+        )}
+
+        {(isBorrowed || showBorrowForm) && (
+          <div className="lend-section-expanded">
+            {isBorrowed ? (
+              <div className="lend-status">
+                <span>
+                  🤝 Geliehen von <strong>{borrowedFrom}</strong> seit{' '}
+                  {borrowedSince
+                    ? new Date(borrowedSince).toLocaleDateString('de-DE')
+                    : ''}
+                </span>
+                <button className="btn-secondary" onClick={handleGiveBack}>
+                  Zurückgegeben
+                </button>
+              </div>
+            ) : (
+              <div className="lend-form">
+                <div className="lend-form-row">
+                  <input
+                    className="lend-form-name"
+                    type="text"
+                    placeholder="Von wem?"
+                    value={borrowFormName}
+                    onChange={(e) => setBorrowFormName(e.target.value)}
+                  />
+                  <input
+                    className="lend-form-date"
+                    type="date"
+                    value={borrowFormDate}
+                    onChange={(e) => setBorrowFormDate(e.target.value)}
+                  />
+                </div>
+                <div className="lend-form-actions">
+                  <button className="btn-primary" onClick={confirmBorrow} disabled={!borrowFormName.trim()}>
+                    Ausleihen bestätigen
+                  </button>
+                  <button className="status-tag" onClick={() => setShowBorrowForm(false)}>
+                    Abbrechen
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {(isLent || showLendForm) && (
           <div className="lend-section-expanded">
