@@ -628,10 +628,10 @@ h2 {
 }
 
 .borrowed-badge-small {
-  top: 6px;
-  left: 6px;
-  padding: 0.15rem 0.45rem;
-  font-size: 0.65rem;
+  top: 5px;
+  left: 5px;
+  padding: 0.1rem 0.4rem;
+  font-size: 0.58rem;
 }
 
 /* Ziehpunkt unten rechts auf dem Cover: einziger Bereich, der Drag & Drop
