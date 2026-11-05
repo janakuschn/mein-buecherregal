@@ -31,3 +31,7 @@ Smileys/
 
 # Temporäre Vite-Dateien (entstehen bei abgebrochenem Dev-Server)
 vite.config.js.timestamp-*.mjs
+
+# Push-Schlüssel (privat, nur lokal / als Supabase-Secret)
+supabase/.env*
+supabase/.temp/

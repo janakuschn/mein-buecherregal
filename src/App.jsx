@@ -1,5 +1,6 @@
 // ZIEL-PFAD: src/App.jsx  (ERSETZT den kompletten alten Inhalt!)
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { registerServiceWorker, refreshPushIfGranted } from './services/push'
 import { AuthProvider, useAuth } from './components/Auth/AuthContext'
 import LoginPage from './components/Auth/LoginPage'
 import RegisterPage from './components/Auth/RegisterPage'
@@ -23,6 +24,14 @@ function AppContent() {
   const [activeTab, setActiveTab] = useState('aktuell')
   const [showRegister, setShowRegister] = useState(false)
   const [selectedBook, setSelectedBook] = useState(null) // null | 'new' | book object
+
+  // Service Worker für Rückgabe-Erinnerungen (Push), Abo still auffrischen.
+  useEffect(() => {
+    registerServiceWorker()
+  }, [])
+  useEffect(() => {
+    if (user) refreshPushIfGranted()
+  }, [user])
 
   if (loading) return <LoadingSpinner />
 

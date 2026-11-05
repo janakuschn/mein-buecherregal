@@ -1093,6 +1093,20 @@ h2 {
   max-width: 160px;
 }
 
+/* "Zurückgegeben am ..." bzw. Hinweis, falls Mitteilungen nicht gehen. */
+.borrow-returned-note,
+.borrow-push-hint {
+  margin: 0.25rem 0;
+  font-size: 0.85rem;
+  color: var(--color-header-text);
+}
+
+.borrow-push-hint {
+  width: 100%;
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
 /* Rückgabedatum neben "Geliehen": exakt so breit wie die Buttons, Optik
    wie .lend-form-date. min-width:0 nötig, weil iOS-Datumsfelder sonst
    eine eigene Mindestbreite erzwingen. */

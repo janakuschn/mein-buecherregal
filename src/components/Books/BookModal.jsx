@@ -5,6 +5,7 @@ import BarcodeScanner from '../Scanner/BarcodeScanner'
 import { lookupByISBN, lookupByText } from '../../services/openlibrary'
 import sleepingHeart from '../../assets/icons/sleeping-heart.png'
 import { isRealIsbn, thaliaUrlForIsbn } from '../../utils/thalia'
+import { enablePush } from '../../services/push'
 
 const heartIcon = RATING_IMAGES[4] // ehemals "Bild 5"
 
@@ -84,6 +85,14 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
   // Haken oben rechts. Schließt Verleihen aus (und umgekehrt).
   const [borrowedUntil, setBorrowedUntil] = useState(book?.borrowed_until || '')
   const isBorrowed = !!borrowedUntil
+  // "Zurückgegeben": Etikett "Geliehen" bleibt auf dem Cover, aber es kommen
+  // keine Erinnerungen mehr (siehe supabase/functions/borrow-reminders).
+  const [borrowedReturnedAt, setBorrowedReturnedAt] = useState(book?.borrowed_returned_at || '')
+  // Button "Zurückgegeben" erst, wenn das Buch schon als geliehen
+  // gespeichert war (also beim erneuten Öffnen), nicht direkt nach dem
+  // Markieren.
+  const wasSavedAsBorrowed = !!book?.borrowed_until
+  const [pushHint, setPushHint] = useState('')
 
   // Hörbuch: Toggle-State, wird mit handleSave in die DB gespeichert
   const [isAudiobook, setIsAudiobook] = useState(book?.is_audiobook || false)
@@ -107,7 +116,21 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
   }
 
   const toggleBorrowed = () => {
-    setBorrowedUntil(isBorrowed ? '' : isoDateInDays(28))
+    if (isBorrowed) {
+      setBorrowedUntil('')
+      setBorrowedReturnedAt('')
+      setPushHint('')
+      return
+    }
+    setBorrowedUntil(isoDateInDays(28))
+    // Erlaubnis für Erinnerungen direkt im Tipp abfragen (iOS-Vorgabe).
+    enablePush().then((result) => {
+      if (result === 'denied') {
+        setPushHint('Mitteilungen sind aus – Erinnerungen in den iPhone-Einstellungen erlauben.')
+      } else if (result === 'unsupported') {
+        setPushHint('Erinnerungen gibt es nur in der App vom Homescreen.')
+      }
+    })
   }
 
   // Erkennt selbst, ob im Suchfeld eine ISBN (nur Ziffern/X, 10 oder 13
@@ -163,6 +186,7 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
       lent_to: lentTo.trim() || null,
       lent_since: lentTo.trim() ? lentSince || todayIsoDate() : null,
       borrowed_until: borrowedUntil || null,
+      borrowed_returned_at: borrowedUntil ? borrowedReturnedAt || null : null,
       is_audiobook: isAudiobook,
       page_count: pageCount || null,
       description: description.trim() || null,
@@ -175,7 +199,7 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
         setSaveError('Dieses Buch (ISBN) ist bereits in deiner Bibliothek vorhanden.')
       } else if (err?.message?.toLowerCase().includes('schema cache')) {
         setSaveError(
-          'Datenbank ist noch nicht aktuell: Bitte zuerst "supabase/add_borrowed_columns.sql" im Supabase SQL Editor ausführen (fügt borrowed_until zur Tabelle "books" hinzu).'
+          'Datenbank ist noch nicht aktuell: Bitte zuerst "supabase/add_borrowed_columns.sql" im Supabase SQL Editor ausführen (fügt die Ausleih-Spalten zur Tabelle "books" hinzu).'
         )
       } else {
         setSaveError(err?.message || 'Speichern fehlgeschlagen. Bitte versuche es erneut.')
@@ -399,6 +423,21 @@ export default function BookModal({ book, onClose, onSave, onDelete }) {
             )}
           </div>
         )}
+
+        {isBorrowed && !isLent && (borrowedReturnedAt || wasSavedAsBorrowed) && (
+          <div className="secondary-actions-row">
+            {borrowedReturnedAt ? (
+              <p className="borrow-returned-note">
+                Zurückgegeben am {new Date(borrowedReturnedAt).toLocaleDateString('de-DE')}
+              </p>
+            ) : (
+              <button className="status-tag" onClick={() => setBorrowedReturnedAt(todayIsoDate())}>
+                ✓ Zurückgegeben
+              </button>
+            )}
+          </div>
+        )}
+        {pushHint && <p className="borrow-push-hint">{pushHint}</p>}
 
         {(isLent || showLendForm) && (
           <div className="lend-section-expanded">
